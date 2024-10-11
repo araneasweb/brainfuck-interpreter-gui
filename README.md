@@ -4,7 +4,7 @@ A Brainfuck Text Editor, Interpreter, and Turing Machine Simulator
 
 This will be replaced with a very brief (one paragraph, 2-3 sentences) overview of the project.
 
-Leave the following sentence in so you can easily link back to the requirements and *especially* rubric while editing your project:
+<!-- Leave the following sentence in so you can easily link back to the requirements and *especially* rubric while editing your project: -->
 
 This project is in fulfillment of the [CPSC 312 2024W1 project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html).
 
@@ -13,12 +13,12 @@ This project is in fulfillment of the [CPSC 312 2024W1 project requirements](htt
 Our team is:
 
 + Yod Golshani (80626666): optional awesome nickname 1
-+ Team Member Name 2 (student # 2): optional awesome nickname 2
-+ Team Member Name 3 (student # 3): optional awesome nickname 3
-+ Team Member Name 4 (student # 4): optional awesome nickname 4
-+ Team Member Name 5 (student # 5): optional awesome nickname 5
++ Auden \[SURNAME\] (student # 2): optional awesome nickname 2
++ Benjamin McPhee (student # 3): optional awesome nickname 3
++ Kevin Liu (student # 4): optional awesome nickname 4
++ Shreyan Das (student # 5): optional awesome nickname 5
 
-We call ourselves: optional awesome team name.
+We call ourselves: `hooglers`
 
 ## Acknowledgments
 
@@ -99,7 +99,7 @@ We should be able to further explore your code's functionality by running `stack
 
 If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above!
 
-### How to test and run the code: Prolog
+<!-- ### How to test and run the code: Prolog
 
 Replace this section with instructions to us for how to test and run your code.
 
@@ -107,4 +107,4 @@ We have set up a simple test file for you to extend using [Prolog Unit Testing](
 
 In the `prolog` directory, you can run `make test` to run the unit tests. You can also load the test file into the swipl repl with `make test-repl` and in that repl you can run `run_tests.` to run those tests.
 
-If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above!
+If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above! -->
