@@ -108,5 +108,3 @@ We have set up a simple test file for you to extend using [Prolog Unit Testing](
 In the `prolog` directory, you can run `make test` to run the unit tests. You can also load the test file into the swipl repl with `make test-repl` and in that repl you can run `run_tests.` to run those tests.
 
 If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above!
-# brainfuck-interpreter-gui
-A Brainfuck Text Editor, Interpreter, and Turing Machine Simulator
