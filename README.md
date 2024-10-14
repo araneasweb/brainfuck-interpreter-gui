@@ -1,10 +1,8 @@
 # brainfuck-interpreter-gui
 
-A Brainfuck Text Editor, Interpreter, and Turing Machine Simulator
+## A Brainfuck Text Editor, Interpreter, and Turing Machine Simulator
 
-This will be replaced with a very brief (one paragraph, 2-3 sentences) overview of the project.
-
-<!-- Leave the following sentence in so you can easily link back to the requirements and *especially* rubric while editing your project: -->
+An integrated development environment for the esolang brainfuck. It includes a text editor with syntax highlighting, an interpreter, debigging with breakpoints/stepping, and turing machine simulator.
 
 This project is in fulfillment of the [CPSC 312 2024W1 project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html).
 
@@ -24,9 +22,8 @@ We call ourselves: `hooglers`
 
 We surely built on the work of others! Here are resources and people we got support from:
 
-+ A list of acknowledgments with a brief explanation of support received, e.g.:
-  "We used Github Copilot extensively to generate first-pass implementations of chunks of the project that we had specified.
-  We then manually adjusted and adapted these to our needs."
++ [Codeblocks from the BrainFuck Wikipedia page](https://en.wikipedia.org/wiki/Brainfuck)
++ [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master)
 
 ## Product Pitch
 
@@ -54,6 +51,7 @@ It may be as short as a few paragraphs, or it may be longer. It should **definit
 to read carefully and thoroughly.
 
 Make clear:
+
 + how this builds meaningfully toward your product pitch above, without being nearly as much work,
 + how it builds on the strength and power of the language, and
 + how it leads naturally to learning and applying some new element of the language (including what that element is!)
@@ -98,13 +96,3 @@ Note: We expect to be able to test your code by running `stack test`. Included a
 We should be able to further explore your code's functionality by running `stack ghci`, and you should instruct us on some interesting cases to try.
 
 If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above!
-
-<!-- ### How to test and run the code: Prolog
-
-Replace this section with instructions to us for how to test and run your code.
-
-We have set up a simple test file for you to extend using [Prolog Unit Testing](https://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)) library for testing. Included among your tests should be some that demonstrate the core functionality of your code. Please remove the example tests before you submit or you will lose marks. (We will be running `make prolog-eval` from the project root.)
-
-In the `prolog` directory, you can run `make test` to run the unit tests. You can also load the test file into the swipl repl with `make test-repl` and in that repl you can run `run_tests.` to run those tests.
-
-If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above! -->
