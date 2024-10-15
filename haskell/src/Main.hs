@@ -88,7 +88,7 @@ buildBracketMap s = buildMap s 0 [] empty
     buildMap [] _ [] k = Just k
     buildMap [] _ _ _ = Nothing
     buildMap (x:xs) i stack k
-      | x == '[' = buildInc (i : stack) k
+      | x == '[' = buildInc (i:stack) k
       | x == ']' = case stack of
           [] -> Nothing
           (p:ps) -> buildInc ps (insert p i $ insert i p k)
