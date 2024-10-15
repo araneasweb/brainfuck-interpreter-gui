@@ -2,7 +2,7 @@
 
 ## A Brainfuck Text Editor, Interpreter, and Turing Machine Simulator
 
-An integrated development environment for the esolang brainfuck. It includes a text editor with syntax highlighting, an interpreter, debigging with breakpoints/stepping, and turing machine simulator.
+An integrated development environment for the esolang brainfuck. It includes a text editor with syntax highlighting, an interpreter, debugging with breakpoints/stepping, and turing machine simulator.
 
 This project is in fulfillment of the [CPSC 312 2024W1 project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html).
 
