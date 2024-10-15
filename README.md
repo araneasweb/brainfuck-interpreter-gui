@@ -22,7 +22,7 @@ We call ourselves: `hooglers`
 
 We surely built on the work of others! Here are resources and people we got support from:
 
-+ [Codeblocks from the BrainFuck Wikipedia page](https://en.wikipedia.org/wiki/Brainfuck)
++ [Codeblocks from the Brainfuck Wikipedia page](https://en.wikipedia.org/wiki/Brainfuck)
 + [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master)
 
 ## Product Pitch
