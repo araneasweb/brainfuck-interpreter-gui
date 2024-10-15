@@ -11,7 +11,7 @@ This project is in fulfillment of the [CPSC 312 2024W1 project requirements](htt
 Our team is:
 
 + Yod Golshani (80626666): optional awesome nickname 1
-+ Auden \[SURNAME\] (student # 2): optional awesome nickname 2
++ Auden Hafezi (student # 2): optional awesome nickname 2
 + Benjamin McPhee (student # 3): optional awesome nickname 3
 + Kevin Liu (student # 4): optional awesome nickname 4
 + Shreyan Das (student # 5): optional awesome nickname 5
