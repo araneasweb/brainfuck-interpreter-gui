@@ -36,7 +36,6 @@ dec (Tape prev i suc)
 
 store :: a -> Tape a -> Tape a
 store x (Tape prev _ suc) = Tape prev x suc
-
 index :: Tape a -> a
 index (Tape _ i _) = i
 
@@ -102,18 +101,19 @@ parseString (Just m) tape s = parseChars 0 tape
     parseChars i t -- get it because
       | i >= length s = return t
       | otherwise = case s !! i of
-          '.' -> writeInputFromTape t >>= parseChars (i + 1)
-          ',' -> writeInputToTape t >>= parseChars (i + 1)
-          '<' -> parseChars (i + 1) (shiftLeft t)
-          '>' -> parseChars (i + 1) (shiftRight t)
-          '+' -> parseChars (i + 1) (inc t)
-          '-' -> parseChars (i + 1) (dec t)
+          '.' -> writeInputFromTape t >>= parseInc
+          ',' -> writeInputToTape t >>= parseInc
+          '<' -> parseInc (shiftLeft t)
+          '>' -> parseInc (shiftRight t)
+          '+' -> parseInc (inc t)
+          '-' -> parseInc (dec t)
           '[' | index t == 0 -> jump
-              | otherwise    -> parseChars (i + 1) t
+              | otherwise    -> parseInc t
           ']' | index t /= 0 -> jump
-              | otherwise    -> parseChars (i + 1) t
-          _   -> parseChars (i + 1) t -- might be more efficient to just prune comments at the beginning (before bracketmap too)
+              | otherwise    -> parseInc t
+          _   -> parseInc t -- might be more efficient to just prune comments at the beginning (before bracketmap too)
       where
+        parseInc = parseChars (i + 1)
         jump = case Data.Map.lookup i m of
                 Just j  -> parseChars (j + 1) t
                 Nothing -> error "mismatched braces" -- should never happen
