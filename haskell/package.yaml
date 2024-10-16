@@ -1,15 +1,22 @@
-# TODO: Replace `my-project` everywhere in this file with your project name.
-name:                my-project
+name:                brainfuck-interpreter-gui
 version:             0.1.0.0
+
+data-files:
+- ./test/*.bf
 
 dependencies:
 - base
+- binary
+- containers
+- silently
 
 library:
   source-dirs: src
+  exposed-modules:
+  - Lib
 
 executables:
-  my-project-exe:
+  brainfuck-interpreter-gui-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -17,10 +24,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - my-project
+    - brainfuck-interpreter-gui
 
 tests:
-  my-project-test:
+  brainfuck-interpreter-gui-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -28,6 +35,6 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - my-project
+    - brainfuck-interpreter-gui
     - tasty
     - tasty-hunit
