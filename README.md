@@ -12,9 +12,9 @@ Our team is:
 
 + Yod Golshani (80626666): optional awesome nickname 1
 + Auden Hafezi (96479712): optional awesome nickname 2
-+ Benjamin McPhee (student # 3): optional awesome nickname 3
++ Benjamin McPhee (16096588): optional awesome nickname 3
 + Kevin Liu (student # 4): optional awesome nickname 4
-+ Shreyan Das (student # 5): optional awesome nickname 5
++ Shreyan Das (51692796): optional awesome nickname 5
 
 We call ourselves: `hooglers`
 
@@ -26,23 +26,11 @@ We surely built on the work of others! Here are resources and people we got supp
 + [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master)
 
 ## Product Pitch
+* An IDE and a turing tape simulator for the esolang, Brainfuck
+* Simulates how the brainfuck code changes the turing machine
+* 
 
-Replace this with a pitch for your project and the problem it solves. This is your vision for what the project
-would like like as a complete product, ready for awesome action. (Yes, awesomeness seems to be a theme.)
-It may be as short as a couple of paragraphs, or it may be longer. It should **definitely** take less than 4 minutes
-to read carefully and thoroughly.
 
-Be sure that this touches clearly on the [project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html#project-requirements).
-
-Good goals to aim for are from the top two rubric items for proposal grading:
-
-> Exciting and language-appropriate product idea tackling a problem that is clearly compelling to a significant audience.
-
-Or:
-
-> Solid and language-appropriate product idea with a problem that is of real interest to the submitting team.
-
-(It's easy to focus on the product and not the problem. Remember to include both!)
 
 ## Minimal Viable Project
 
