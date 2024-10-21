@@ -13,7 +13,7 @@ Our team is:
 + Yod Golshani (80626666): optional awesome nickname 1
 + Auden Hafezi (96479712): optional awesome nickname 2
 + Benjamin McPhee (16096588): optional awesome nickname 3
-+ Kevin Liu (student # 4): optional awesome nickname 4
++ Kevin Liu (87079844): optional awesome nickname 4
 + Shreyan Das (51692796): optional awesome nickname 5
 
 We call ourselves: `hooglers`
