@@ -71,6 +71,7 @@ charToByte c
 
 -- monads are kinda like the fae yk
 
+-- TODO redefine IO to be able to take inputs from gui instead of cin
 writeInputToTape :: Tape Word8 -> IO (Tape Word8)
 writeInputToTape t = getChar >>= \c -> case charToByte c of
   Just c -> return (store c t)
@@ -119,10 +120,5 @@ parseString (Just m) tape s = parseChars 0 tape
                 Just j  -> parseChars (j + 1) t
                 Nothing -> error "mismatched braces" -- should never happen
 
-handleArgs :: [String] -> IO String
-handleArgs ("-f":f:_) = readFile f
-handleArgs ("-s":s:_) = return s
-handleArgs _ = error "missing or invalid args"
-
-run :: [String] -> IO ()
-run args = handleArgs args >>= \s -> void (parseString (buildBracketMap s) (Tape (repeat 0) 0 (repeat 0)) s)
+run :: String -> IO (Tape Word8)
+run s = parseString (buildBracketMap s) (Tape (repeat 0) 0 (repeat 0)) s

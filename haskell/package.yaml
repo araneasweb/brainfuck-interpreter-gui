@@ -9,11 +9,17 @@ dependencies:
 - binary
 - containers
 - silently
+- gi-gtk
+- freetype2
+- cairo
+- haskell-gi-base
+- text
 
 library:
   source-dirs: src
   exposed-modules:
   - Lib
+  - GUITest
 
 executables:
   brainfuck-interpreter-gui-exe:
