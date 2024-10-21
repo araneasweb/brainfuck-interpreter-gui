@@ -8,7 +8,7 @@ build:
 
 .PHONY: test
 test:
-	stack build --test
+	stack build --test --test-arguments "--num-threads=1"
 
 .PHONY: ghci
 ghci:
