@@ -3,3 +3,28 @@ compiler-check: newer-minor
 
 packages:
 - .
+
+### TRY THIS IF COMPILATION FAILS
+# nix:
+#   enable: true
+#   packages:
+#     - pkg-config
+#     - glib
+#     - gobject-introspection
+#     - pcre2
+#     - freetype
+#     - cairo
+#     - expat
+#     - fontconfig
+#     - util-linux
+#     - harfbuzz
+#     - libselinux
+#     - libsepol
+#     - xorg.libXdmcp
+#     - gtk3
+#     - lerc
+#     - libthai
+#     - libdatrie
+#     - libxkbcommon
+#     - libepoxy
+#     - xorg.libXtst
