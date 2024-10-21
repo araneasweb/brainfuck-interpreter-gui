@@ -26,9 +26,6 @@ We surely built on the work of others! Here are resources and people we got supp
 + [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master)
 
 ## Product Pitch
-* An IDE and a turing tape simulator for the esolang, Brainfuck
-* Simulates how the brainfuck code changes the turing machine
-* 
 
 
 
