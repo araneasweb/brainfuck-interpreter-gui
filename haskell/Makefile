@@ -14,6 +14,10 @@ test:
 ghci:
 	stack ghci
 
+.PHONY: gui
+gui:
+	stack exec brainfuck-interpreter-gui-exe -- -g
+
 .PHONY: docs
 docs:
 	stack haddock --open

@@ -10,11 +10,11 @@ This project is in fulfillment of the [CPSC 312 2024W1 project requirements](htt
 
 Our team is:
 
-+ Yod Golshani (80626666): optional awesome nickname 1
-+ Auden Hafezi (96479712): optional awesome nickname 2
-+ Benjamin McPhee (16096588): optional awesome nickname 3
-+ Kevin Liu (87079844): optional awesome nickname 4
-+ Shreyan Das (51692796): optional awesome nickname 5
++ Yod Golshani (80626666): `yod`
++ Auden Hafezi (96479712): `audenh`
++ Benjamin McPhee (16096588): `bmcphee`
++ Kevin Liu (87079844): `kliu52`
++ Shreyan Das (51692796): `dshreyan`
 
 We call ourselves: `hooglers`
 
@@ -22,35 +22,206 @@ We call ourselves: `hooglers`
 
 We surely built on the work of others! Here are resources and people we got support from:
 
-+ [Codeblocks from the Brainfuck Wikipedia page](https://en.wikipedia.org/wiki/Brainfuck)
-+ [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master)
++ [Codeblocks from the Brainfuck Wikipedia page](https://en.wikipedia.org/wiki/Brainfuck) for tests and language understanding.
++ [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master) for tests.
++ [haskell-gi](https://github.com/haskell-gi) for a GUI. (well, bindings to a gui library more specifically)
++ [Parsec](https://github.com/haskell/parsec) for a full-featured parsing library.
 
 ## Product Pitch
 
-Our full project idea is a complete integrated development environment (IDE) for brainfuck, including a text editor that can highlight, recommend, and autofill syntax, and an interpreter for debugging featuring breakpoints and stepping inspired by the CPSC 213 assembly stepper. This would feature a Turing machine simulator, a visual representation of the memory tape that would be demonstrably affected step by step by the user’s input. It would ideally be this complete package that any of the twenty-odd people interested in both brainfuck and haskell could use for at least half an hour of novelty and enjoyment. 
+Our full project idea is a complete integrated development environment (IDE) for brainfuck. Its features would include (but perhaps would not be limited to):
 
-This builds on our haskell knowledge by looking into parsing using a parsing library (https://hackage.haskell.org/package/parsec) to identify matching brackets and parsing brainfuck code into tokens. Then, syntactic analysis is used for both syntax highlighting, making it so that different tokens are different colours and checking for syntax errors. Furthermore, we are extending our knowledge by making User Interfaces using the GI.Gtk library  (https://github.com/haskell-gi). 
++ **A Fully-Featured Text Editor** with syntax highlighting, automatic code completion, and error detection.
++ **A Realtime Interpreter** written entirely in haskell, including tokenisation, built with Parsec.
++ **A Turing Machine Simulator** allowing for a visual representation of the memory tape for further understanding about turing machine behaviour (Could be very nice to have when taking CPSC 121).
++ **A Debugger** that allows for stepping through the brainfuck code, setting breakpoints, and stepping in/out of loops (with insparation from the CPSC 213 machine).
++ **Variable Compilation Speed** to aid with turing machine understanding.
++ **A Higher level Turing Lang** that seamlessly compiles down to Brainfuck, saving turing machine enthusasts from needing to trudge through raw brainfuck.
++ **A Beautiful and Themeable GUI** using GNOME's GTK library for access to the wide range of extensions and themes it provides.
++ **Highly Extensible**, with an extension system written in (of course) Haskell.
++ **Multithreading!!** Because, uh... It's really funny to have multithreaded brainfuck. You know, because that's what's holding it back. It'd beat C if it was multithreaded.
++ **Fully Free and Open Source** with the GNU GPL v3 License.
++ **It's Brainfuck!!!!** Need we say more?
 
+This builds on our haskell knowledge by looking into parsing using parsec, a parsing library, to identify matching brackets and parsing brainfuck code into tokens. Then, syntactic analysis is used for both syntax highlighting, making it so that different tokens are different colours and checking for syntax errors. Furthermore, we are extending our knowledge by making graphical user interfaces using the GI.Gtk library.
 
 ## Minimal Viable Project
-Our intended minimum viable product is a Haskell interpreter for brainfuck that allows the user to write brainfuck code in our editor, and watch its progression through a Turing machine simulator. This leads to us learning about new elements of Haskell, as crucially, our project includes a graphical user interface. We have not explored the capabilities of Haskell to create GUIs, therefore, we will gain significant knowledge through this process. In addition, we intend to use a parsing library to identify matching brackets in a simpler way than we have currently included in our proposal code. Learning how to use this library will allow us to improve the efficiency and readability of our code for interpreting brainfuck. 
 
-Our MVP builds meaningfully towards our product pitch by creating a basic environment for developing brainfuck code, as well as an intuitive and fascinating way of stepping through said code. Ultimately, IDE’s typically include many features such as debuggers, build automation, syntax highlighting, a source code editor, and more. Our project will ultimately begin to build a usable and novel IDE by creating a source code editor that can ultimately parse and interpret brainfuck code. In addition, our concept of a Turing machine simulator provides a method of debugging unique to brainfuck code that would allow a developer to enhance their understanding. As this project was inspired by the CPSC 213 assembly stepper, we see value in our final product as it provides a specialized way for users to write and debug brainfuck code, allowing them to attain a deeper understanding of the language. Brainfuck is a niche programming language, so our IDE will provide an entertaining and useful way for people to experience brainfuck as a language.
+Our intended minimum viable product contains the following core functionalities:
 
-Our project builds on the strengths of Haskell by leveraging pattern matching to match lexical tokens generated by the parser. Haskell also has excellent type safety and inference, making it near impossible to mix up different tokens with one another, unlike in a weakly typed language like TypeScript. Also, the executables created by Haskell are performant, making the final product fast. 
++ **A Text editor** with syntax highlighting and mismatched bracket detection.
++ **A Realtime Interpreter** written entirely in haskell, including tokenisation, built with Parsec.
++ **A Turing Machine Simulator** allowing for a visual representation of the memory tape for further understanding about turing machine behaviour (Could be very nice to have when taking CPSC 121).
++ **A Stepper** to allow for intimate understading of what's happening to the tape at every moment (similar in style to DrRacket's implementation).
++ **A Beautiful and Themeable GUI** using GNOME's GTK library for access to the wide range of extensions and themes it provides.
++ **Fully Free and Open Source** with the GNU GPL v3 License.
++ **Surprisingly, Still Brainfuck** and not another word need be said ✨
+
+Our project builds on the strengths of Haskell by leveraging pattern matching to match lexical tokens generated by the parser. Haskell also has excellent type safety and inference, making it near impossible to mix up different tokens with one another, unlike in a weakly typed language like TypeScript. Also, the executables created by Haskell are performant, making the final product fast.
 
 ## Proof of Concept
 
-For our proof of concept, we have begun with a basic implementation of the GUI we intend to create. This GUI will simulate a Turing machine, to display the effects of input brainfuck commands (parsed and built through Haskell). We have included a GUI test file that allows you to interact with the basic version of our GUI to see our concept for our final IDE. At this time, our GUI includes a brainfuck text entry box, which can then be used to run brainfuck code. Our final product will connect this GUI to our brainfuck interpreter. In this way, you will be able to write brainfuck code in our pseudo-IDE, and step through it using the Turing machine simulator. Our sample GUI inspires confidence that we should be able to complete our intended project, as brainfuck is a small language. Therefore, we should be able to create a GUI that allows you to step through the various actions one could include in brainfuck code. The GUI is a key element to our project, as our final product (the MVP) should allow you to write, edit, and view the progression of brainfuck code. Being able to view the code stepped through a Turing machine simulator is a key element.
+For a proof-of-concept, we have brought forth two aspects of this IDE that, together, very clearly act as a foundation for and act to demonstrate the feasibility of the final project. Those being:
 
-### How to test and run the code: Haskell
+&nbsp;&nbsp;**The Interpreter**, which has the ability to take in Brainfuck code, either as a `.bf` file or as a directly entered string and execute it exactly indentically to the Brainfuck specification&mdash;outputting to the tty. It includes a `Tape` datatype that acts identically to an actual turing machine's infinite tape and O(1) complexity for every action save for reading the input. This same datatype will be used for tape visualisation in the final product.
 
-Replace this section with instructions to us for how to test and run your code.
+&nbsp;&nbsp;**The Graphical User Interface** which consists of two windows, one for brainfuck text entry and an output panel for the brainfuck compilation&mdash;when hooked into the interpreter. It also has a `Run` and `Reset` button for starting and resetting the brainfuck code. Currently, the shape of the GUI does exist, along with GTK themeing (as in if you have a gtk theme on your system it will follow it).
 
-As it is currently set up, editing works best if you first `cd` into the `haskell` subdirectory and open VS Code on that directory (`code .`). There is a `Makefile` with some helpful aliases, but you can also just use `stack` as normal.
+### Code!&nbsp;
 
-Note: We expect to be able to test your code by running `stack test`. Included among your tests should be some that demonstrate the core functionality of your code. (We will be running `make haskell-eval` from the project root.)
+The comments were pruned (go look at the actual files they're super understandable and documented well :)
 
-We should be able to further explore your code's functionality by running `stack ghci`, and you should instruct us on some interesting cases to try.
+#### Tape Implementation:&nbsp;
 
-If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above!
+```haskell
+data Tape a = Tape [a] a [a]
+    deriving (Show)
+
+shiftRight :: (Bounded a) => Tape a -> Tape a
+shiftRight (Tape prev i []) = Tape (i:prev) minBound (repeat minBound)
+shiftRight (Tape prev i (a:as)) = Tape (i:prev) a as
+
+shiftLeft :: Bounded a => Tape a -> Tape a
+shiftLeft (Tape [] i suc) = Tape (repeat minBound) minBound (i:suc)
+shiftLeft (Tape (a:as) i suc) = Tape as a (i:suc)
+
+inc :: (Eq a, Bounded a, Enum a) => Tape a -> Tape a
+inc (Tape prev i suc)
+  | i == maxBound = Tape prev minBound suc
+  | otherwise = Tape prev (succ i) suc
+
+dec :: (Eq a, Bounded a, Enum a) => Tape a -> Tape a
+dec (Tape prev i suc)
+  | i == minBound = Tape prev maxBound suc
+  | otherwise = Tape prev (pred i) suc
+
+store :: a -> Tape a -> Tape a
+store x (Tape prev _ suc) = Tape prev x suc
+
+index :: Tape a -> a
+index (Tape _ i _) = i
+```
+
+#### Main Brainfuck Parsing Functions:&nbsp;
+
+```haskell
+buildBracketMap :: String -> Maybe (Map Int Int)
+buildBracketMap s = buildMap s 0 [] empty
+  where
+    buildMap [] _ [] k = Just k
+    buildMap [] _ _ _ = Nothing
+    buildMap (x:xs) i stack k
+      | x == '[' = buildInc (i:stack) k
+      | x == ']' = case stack of
+          [] -> Nothing
+          (p:ps) -> buildInc ps (insert p i $ insert i p k)
+      | otherwise = buildInc stack k
+      where buildInc = buildMap xs (i + 1)
+
+parseString :: Maybe (Map Int Int) -> Tape Word8 -> String -> IO (Tape Word8)
+parseString Nothing _ _ = error "mismatched braces"
+parseString (Just m) tape s = parseChars 0 tape
+  where
+    parseChars i t
+      | i >= length s = return t
+      | otherwise = case s !! i of
+          '.' -> writeInputFromTape t >>= parseInc
+          ',' -> writeInputToTape t >>= parseInc
+          '<' -> parseInc (shiftLeft t)
+          '>' -> parseInc (shiftRight t)
+          '+' -> parseInc (inc t)
+          '-' -> parseInc (dec t)
+          '[' | index t == 0 -> jump
+              | otherwise    -> parseInc t
+          ']' | index t /= 0 -> jump
+              | otherwise    -> parseInc t
+          _   -> parseInc t
+      where
+        parseInc = parseChars (i + 1)
+        jump = case Data.Map.lookup i m of
+                Just j  -> parseChars (j + 1) t
+                Nothing -> error "mismatched braces"
+```
+
+#### Adding all GUI elements to window:&nbsp;
+
+```haskell
+  hbox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal]
+  vbox <- new Gtk.Box [#orientation := Gtk.OrientationVertical]
+  buttonBox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal]
+  #packStart hbox scrolledWindowEntry True True 32
+  #packStart vbox scrolledWindowOutput True True 32
+  #packStart buttonBox lockedButton False False 16
+  #packStart buttonBox lockedResetButton False False 16
+  #packStart vbox buttonBox True True 32
+  #packStart hbox vbox True True 32
+```
+
+#### Invoking the GUI:&nbsp;
+
+```haskell
+run :: IO ()
+run = do
+  maybeApp <- Gtk.applicationNew (Just "foss.brainfuck-ide") []
+
+  case maybeApp of
+    Nothing -> putStrLn "Failed to create the GTK application."
+    Just app -> do
+      on app #activate (activate app)
+      void $ #run app Nothing
+```
+
+#### Main.hs's logic:&nbsp;
+
+```haskell
+handleArgs :: [String] -> IO ()
+handleArgs ("-f":f:_) = void (readFile f >>= Lib.run)
+handleArgs ("-s":s:_) = void $ Lib.run s
+handleArgs ("-g":_)   = GUITest.run
+handleArgs _ = error "missing or invalid args"
+
+main:: IO()
+main = getArgs >>= handleArgs
+```
+
+## How to test and run the code
+
+**Ensure you have the [nix package manager](https://nixos.org/download/) installed or the code will not compile!
+
+To test the interpreter functionality, simply run `make` from the root directory or `make test` from `./haskell`. Technically you could run this through ghci, but it returns a `tape`, which is an infinite piece of data so you probably don't want to `show` that.
+
+To use the interpreter, simply run the command `stack exec brainfuck-interpreter-gui-exe -- -f <<PATH TO FILE>>` (without the `<<>>`) to open a `.bf` file or `stack exec brainfuck-interpreter-gui-exe -- -s STRING` to directly interpret a brainfuck string.
+
+To run the GUI, enter `./haskell` and run the command `stack exec brainfuck-interpreter-gui-exe -- -g` or run the command `make gui`. You can also run `stack ghci`/`make ghci`, then run `:l GUITest` followed by `run`.
+
+Just a note: the tests using `Tasty` were removed in favour of an in-house tester written in POSIX shell script because the interpreter prints to the tty and tasty does not have a way to read from the tty without being extremely inconsistent. The equivalent `Tasty` tests do still exist and can be run with `stack test` but will undoubtably fail.
+
+### Dependencies
+
+|Haskell Libraries|Packages (via Nix)|
+|-|-|
+|as|as|
+|base|glib|
+|binary|gobject-introspection|
+|containers|pcre2|
+|silently|freetype|
+|gi-gtk|cairo|
+|freetype2|expat|
+|cairo|fontconfig|
+|haskell-gi-base|util-linux|
+|text|harfbuzz|
+|tasty|libselinux|
+|tasty-hunit|libsepol|
+||pkg-config|
+||xorg.libXdmcp|
+||gtk3|
+||lerc|
+||libthai|
+||libdatrie|
+||libxkbcommon|
+||libepoxy|
+||xorg.libXtst|
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](./LICENSE).
