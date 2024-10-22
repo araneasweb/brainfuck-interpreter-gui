@@ -188,7 +188,7 @@ main = getArgs >>= handleArgs
 
 **Ensure you have the [nix package manager](https://nixos.org/download/) and the installed or the code will not compile!**
 
-**For Ubuntu based systems (including WSL2), must run ``sudo apt install nix-bin`` first.**
+**(For Debian based systems (including WSL2), must run ``sudo apt install nix-bin`` first.)**
 
 To test the interpreter functionality, simply run `make` from the root directory or `make test` from `./haskell`.
 
