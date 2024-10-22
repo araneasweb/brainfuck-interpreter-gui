@@ -186,7 +186,7 @@ main = getArgs >>= handleArgs
 
 ## How to test and run the code
 
-**Ensure you have the [nix package manager](https://nixos.org/download/) installed or the code will not compile!
+**Ensure you have the [nix package manager](https://nixos.org/download/) installed or the code will not compile!**
 
 To test the interpreter functionality, simply run `make` from the root directory or `make test` from `./haskell`. Technically you could run this through ghci, but it returns a `tape`, which is an infinite piece of data so you probably don't want to `show` that.
 
