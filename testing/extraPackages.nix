@@ -1,0 +1,53 @@
+{ pkgs, ... }:
+
+{
+  environment.systemPackages = with pkgs; [
+    neovim
+    curl
+    git
+    kitty
+    hunspell
+    hunspellDicts.en_CA
+    cabal-install
+    ghc
+    p11-kit
+    zip
+    hlint
+    acct
+    haskellPackages.haskell-language-server
+    gcc
+    gnumake
+    clang
+    glibc.static
+    glibc
+    haskellPackages.stack
+    haskellPackages.hoogle
+    haskellPackages.hakyll
+    onefetch
+    haskellPackages.hoauth2
+    zlib
+    hpack
+    pkg-config
+    glib
+    gobject-introspection
+    pcre2
+    cairo
+    freetype
+    expat
+    fontconfig
+    util-linux
+    harfbuzz
+    libselinux
+    libsepol
+    xorg.libXdmcp
+    gtk3
+    lerc
+    libthai
+    libdatrie
+    libxkbcommon
+    libepoxy
+    xorg.libXtst
+    at-spi2-core
+    vte
+  ];
+}
