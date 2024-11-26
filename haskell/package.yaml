@@ -18,7 +18,9 @@ dependencies:
 library:
   source-dirs: src
   exposed-modules:
-  - Lib
+  - Tape
+  - InterpreterBase
+  - InterpreterStdio
   - GUITest
 
 executables:
