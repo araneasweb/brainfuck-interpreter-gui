@@ -28,3 +28,4 @@ nix:
     - libxkbcommon
     - libepoxy
     - xorg.libXtst
+    - libsysprof-capture

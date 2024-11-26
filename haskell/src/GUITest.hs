@@ -3,7 +3,6 @@ module GUITest where
 
 import Control.Monad (void)
 import qualified GI.Gtk as Gtk
--- import Lib as Interp
 import Data.GI.Base
 import qualified Data.Text as T
 import Control.Monad.IO.Class (liftIO)
