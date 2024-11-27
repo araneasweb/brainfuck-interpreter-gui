@@ -202,7 +202,6 @@ Just a note: the tests using `Tasty` were removed in favour of an in-house teste
 
 |Haskell Libraries|Packages (via Nix)|
 |-|-|
-|as|as|
 |base|glib|
 |binary|gobject-introspection|
 |containers|pcre2|
@@ -223,6 +222,7 @@ Just a note: the tests using `Tasty` were removed in favour of an in-house teste
 ||libxkbcommon|
 ||libepoxy|
 ||xorg.libXtst|
+||libsysprof-capture|
 
 ## License
 
