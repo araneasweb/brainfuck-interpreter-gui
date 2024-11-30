@@ -16,6 +16,10 @@ ghci:
 
 .PHONY: gui
 gui:
+	stack build && stack exec brainfuck-interpreter-gui-exe -- -g
+
+.PHONY: gui-raw
+gui-raw:
 	stack exec brainfuck-interpreter-gui-exe -- -g
 
 .PHONY: docs

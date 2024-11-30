@@ -1,4 +1,4 @@
-module InterpreterBase(Interpreter(..), run) where
+module InterpreterBase(Interpreter(..), run, buildBracketMap) where
 import Data.Binary (Word8)
 import Data.Map (Map, lookup, insert, empty)
 import Control.Monad (void)
@@ -21,6 +21,7 @@ class Monad m => Interpreter m where
 --   with the index of its partner. This should be autopopulated.
 -- We can have an index counter that recursively increases as we parse the string that we can outright change for jumps
 -- Technically this is slower than a jump table with saved states, but it's both WAY easier to implement and notably more memory efficient
+-- | Given a string, produces a @Just (Map Int Int)@ of each bracket and its partner (and vice versa), or Nothing if there is a broken pair
 buildBracketMap :: String -> Maybe (Map Int Int) -- would love to find a way to not need to precompute but my brain is too small
 buildBracketMap s = buildMap s 0 [] empty
   where
