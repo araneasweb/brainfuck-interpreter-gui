@@ -3,23 +3,48 @@ module GUITest where
 
 import Control.Monad (void)
 import qualified GI.Gtk as Gtk
-import Data.GI.Base
+import Data.GI.Base (AttrOp((:=)), on, set, new)
 import qualified Data.Text as T
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (MonadIO(liftIO), ReaderT(runReaderT))
+import InterpreterGui (run, GUIState (..))
+import Data.Binary (Word8)
+import Tape (Tape(..), store, index)
+import Control.Concurrent (forkIO)
+import qualified GI.GLib as GLib
 
 activate :: Gtk.Application -> IO ()
 activate app = do
-  -- Initialising the run button with a shape constraint so it doesn't grow with resising
-  button <- new Gtk.Button [#label := "Run"]
+  -- Initialising the run button with a shape constraint
+  button <- new Gtk.Button [ #label := "Run" ]
   lockedButton <- new Gtk.AspectFrame []
-  set lockedButton [#ratio := 2.0, #obeyChild := True, #shadowType := Gtk.ShadowTypeNone]
+  set lockedButton [ #ratio      := 2.0
+                   , #obeyChild  := True
+                   , #shadowType := Gtk.ShadowTypeNone ]
   #add lockedButton button
 
   -- ditto but with the reset button
-  resetButton <- new Gtk.Button [#sensitive := False, #label := "Reset"]
+  resetButton <- new Gtk.Button [ #sensitive := False
+                                , #label     := "Reset" ]
   lockedResetButton <- new Gtk.AspectFrame []
-  set lockedResetButton [#ratio := 2.0, #obeyChild := True, #shadowType := Gtk.ShadowTypeNone]
+  set lockedResetButton [ #ratio      := 2.0
+                        , #obeyChild  := True
+                        , #shadowType := Gtk.ShadowTypeNone]
   #add lockedResetButton resetButton
+
+  -- bottom half of the console that works with the "," command
+  sendButton <- new Gtk.Button [ #sensitive := False
+                               , #label := "Send" ]
+  lockedSendButton <- new Gtk.AspectFrame []
+  set lockedSendButton [ #ratio      := 2.0
+                       , #obeyChild  := True
+                       , #shadowType := Gtk.ShadowTypeNone]
+  #add lockedSendButton sendButton
+  inputEntry <- new Gtk.Entry [ #sensitive := False ]
+  inputBox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
+  #packStart inputBox inputEntry True True 0
+  #packStart inputBox lockedSendButton False False 0
+
 
   -- adding the brainfuck text entry box and the pseudo-cout box
   entry <- new Gtk.TextView []
@@ -34,8 +59,7 @@ activate app = do
   #setSizeRequest scrolledWindowEntry 256 128
   #setSizeRequest scrolledWindowOutput 256 128
 
-  -- on run click, the code should pull the info from the text extry and paste it into the tty and the output view, then lock itself out
-  -- TODO hook into the brainfuck interpreter for interpretation instead of copy paste
+  -- starting interpreter when run button is clicked
   on button #clicked $ do
     set button [#sensitive := False]
     set resetButton [#sensitive := True]
@@ -43,9 +67,14 @@ activate app = do
     startIter <- #getStartIter buffer
     endIter <- #getEndIter buffer
     text <- #getText buffer startIter endIter False
-    putStrLn $ T.unpack text
     outputBuffer <- #getBuffer outputView
-    Gtk.textBufferSetText outputBuffer text (-1)
+    Gtk.textBufferSetText outputBuffer "" (-1)
+    _ <- liftIO $ forkIO $ void $
+      runReaderT (InterpreterGui.run (T.unpack text))
+        GUIState { outputView  = outputView
+                 , inputField  = inputEntry
+                 , inputToggle = sendButton }
+    return ()
 
   -- reset clears the output view, unlocks run, and locks itself
   on resetButton #clicked $ do
@@ -63,18 +92,24 @@ activate app = do
   #setMarginBottom resetButton 32
 
   -- adding all the elements to boxes for shape and bounding
-  hbox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal]
-  vbox <- new Gtk.Box [#orientation := Gtk.OrientationVertical]
-  buttonBox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal]
+  hbox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
+  vbox <- new Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+  buttonBox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
+  terminal <- new Gtk.Box [ #orientation := Gtk.OrientationVertical ]
   #packStart hbox scrolledWindowEntry True True 32
-  #packStart vbox scrolledWindowOutput True True 32
+  #packStart terminal scrolledWindowOutput True True 0
+  #packStart terminal inputBox False False 0
+  #setSizeRequest inputBox (-1) 32
+  #packStart vbox terminal True True 32
   #packStart buttonBox lockedButton False False 16
   #packStart buttonBox lockedResetButton False False 16
   #packStart vbox buttonBox True True 32
   #packStart hbox vbox True True 32
 
   -- adding bounding box to main window
-  window <- new Gtk.ApplicationWindow [#application := app, #title := "Brainfuck Integrated Development Environment"]
+  window <- new Gtk.ApplicationWindow
+    [ #application := app
+    , #title := "Brainfuck Integrated Development Environment" ]
   #add window hbox
 
   #showAll window
