@@ -12,6 +12,9 @@ import Data.Binary (Word8)
 import Tape (Tape(..), store, index)
 import Control.Concurrent (forkIO)
 import qualified GI.GLib as GLib
+import qualified GI.Gdk as Gdk
+
+
 
 activate :: Gtk.Application -> IO ()
 activate app = do
@@ -58,6 +61,69 @@ activate app = do
   #add scrolledWindowOutput outputView
   #setSizeRequest scrolledWindowEntry 256 128
   #setSizeRequest scrolledWindowOutput 256 128
+
+
+  buffer <- #getBuffer entry
+  
+
+  on buffer #changed $ do 
+    tagTable <- #getTagTable buffer
+
+    -- memory leak here?
+
+    commentTag <- Gtk.textTagNew Nothing
+    set commentTag [ #foreground := "grey" ]
+    _ <- #add tagTable commentTag
+    startIter <- #getStartIter buffer
+    endIter <- #getEndIter buffer
+    #applyTag buffer commentTag startIter endIter
+
+    -- plus and minus
+
+    plusTag <-  Gtk.textTagNew Nothing
+    set plusTag [#foreground := "#dc8a78"]  
+    _ <- #add tagTable plusTag
+    findCharAndApplyTag buffer (T.pack "+") plusTag
+
+    minusTag <- Gtk.textTagNew Nothing
+    _ <- #add tagTable minusTag
+    set minusTag [ #foreground := "#dc8a78" ]
+    findCharAndApplyTag buffer (T.pack "-") minusTag
+
+    -- rangle and langle
+
+    rAngleTag <- Gtk.textTagNew Nothing
+    _ <- #add tagTable rAngleTag
+    set rAngleTag [#foreground := "#7287fd"]  
+    findCharAndApplyTag buffer (T.pack ">") rAngleTag
+
+    lAngleTag <- Gtk.textTagNew Nothing
+    _ <- #add tagTable lAngleTag
+    set lAngleTag [#foreground := "#7287fd"]  
+    findCharAndApplyTag buffer (T.pack "<") lAngleTag
+
+    -- period and comma
+
+    periodTag <- Gtk.textTagNew Nothing
+    _ <- #add tagTable periodTag
+    set periodTag [ #foreground := "#8839ef" ]
+    findCharAndApplyTag buffer (T.pack ".") periodTag
+
+    commaTag <- Gtk.textTagNew Nothing
+    _ <- #add tagTable commaTag
+    set commaTag [ #foreground := "#8839ef" ]
+    findCharAndApplyTag buffer (T.pack ",") commaTag
+
+    errorTag <- Gtk.textTagNew Nothing 
+    _ <- #add tagTable errorTag
+    set errorTag [#foreground := "red"]
+
+
+    -- set bracketTag [#foreground := "#d20f39"] 
+    matchBrackets buffer tagTable errorTag ["#d20f39", "#df8e1d", "#40a02b", "#04a5e5", "#7287fd"]
+
+
+
 
   -- starting interpreter when run button is clicked
   on button #clicked $ do
@@ -113,6 +179,80 @@ activate app = do
   #add window hbox
 
   #showAll window
+
+findCharAndApplyTag :: Gtk.TextBuffer -> T.Text -> Gtk.TextTag -> IO ()
+findCharAndApplyTag buffer char tag = do
+    startIter <- #getStartIter buffer
+    let findAndTag iter = do
+            (found, matchStart, matchEnd) <- #forwardSearch iter char [Gtk.TextSearchFlagsVisibleOnly] Nothing
+            if found
+                then do
+                    #applyTag buffer tag matchStart matchEnd
+                    -- continue searching from the end of the match
+                    findAndTag matchEnd
+                else return ()  
+
+    findAndTag startIter
+
+
+-- highlight matching pairs of brackets, red if unpaired
+matchBrackets :: Gtk.TextBuffer -> Gtk.TextTagTable -> Gtk.TextTag -> [String] -> IO ()
+matchBrackets buffer tagTable errorTag colours = do
+    iter <- Gtk.textBufferGetStartIter buffer
+
+    let loop currentIter stack i = do
+      -- check if we are at the end
+            isEnd <- Gtk.textIterIsEnd currentIter
+            if not isEnd
+                then do
+                    char <- Gtk.textIterGetChar currentIter
+                    -- update the stack
+                    stack' <- 
+                      if char == '['
+                        then do
+                            -- copied2 highlights the error
+                            copiedIter1 <- Gtk.textIterCopy currentIter
+                            copiedIter2 <- Gtk.textIterCopy currentIter
+                            _ <- Gtk.textIterForwardChar copiedIter2
+                            #applyTag buffer errorTag currentIter copiedIter2
+                            return (copiedIter1 : stack)
+                        else if char == ']'
+                            then do
+                                case stack of
+                                    (lastIter:rest) -> do
+                                        -- create a new tag and add to the match
+                                        -- need to copy a bunch of stuff to avoid modification
+                                        copiedIter <- Gtk.textIterCopy lastIter
+                                        _ <- Gtk.textIterForwardChar copiedIter
+                                        bracketTag <- Gtk.textTagNew Nothing
+                                        _ <- #add tagTable bracketTag
+                                        set bracketTag [#foreground := (T.pack (colours !! i))] 
+
+                                        #applyTag buffer bracketTag lastIter copiedIter
+
+                                        copiedIter <- Gtk.textIterCopy currentIter
+                                        _ <- Gtk.textIterForwardChar copiedIter
+                                        #applyTag buffer bracketTag currentIter copiedIter
+
+                                        -- pop off
+                                        return rest
+                                    [] -> do 
+                                      -- too many ]
+                                      copiedIter <- Gtk.textIterCopy currentIter
+                                      _ <- Gtk.textIterForwardChar copiedIter
+                                      #applyTag buffer errorTag currentIter copiedIter
+                                      return stack 
+                        else return stack
+                    -- traverse the text
+                    moved <- Gtk.textIterForwardChar currentIter
+                    if moved
+                        then loop currentIter stack' (mod (i + 1) (length colours))
+                        else return ()
+            else return ()
+
+    -- Start the search loop
+    loop iter [] 0
+
 
 run :: IO ()
 run = do
