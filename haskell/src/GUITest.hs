@@ -106,6 +106,8 @@ activate app = do
   #packStart vbox buttonBox True True 32
   #packStart hbox vbox True True 32
 
+  
+
   -- adding bounding box to main window
   window <- new Gtk.ApplicationWindow
     [ #application := app

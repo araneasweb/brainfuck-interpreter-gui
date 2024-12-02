@@ -75,3 +75,5 @@ parseString (Just m) tape s = parseChars 0 tape
 -- | runs the interpreter with an empty tape and initialised bracketmap
 run :: Interpreter m => String -> m (Tape Word8)
 run s = parseString (buildBracketMap s) (Tape (repeat 0) 0 (repeat 0)) s
+
+
