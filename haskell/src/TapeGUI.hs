@@ -1,89 +1,93 @@
+{-# LANGUAGE OverloadedStrings, OverloadedLabels #-}
 module TapeGUI where
-{-# LANGUAGE OverloadedStrings #-}
-
 
 import qualified GI.Gtk as Gtk
 import Data.IORef (IORef, newIORef, modifyIORef', readIORef)
 import qualified Data.Text as T
-
-
+import Data.GI.Base (on, AttrOp((:=)), new)
+import Data.Word (Word8)
+import Tape (Tape(..), shiftRight, shiftLeft, inc, dec, store, index)
 
 main :: IO ()
 main = do
     -- Initialize GTK
-    Gtk.init Nothing
+    _ <- Gtk.init Nothing
 
     -- Create the main application window
-    window <- Gtk.windowNew Gtk.WindowTypeToplevel
-    Gtk.windowSetTitle window "Turing Tape"
-    Gtk.windowSetDefaultSize window 600 200
+    window <- new Gtk.Window [ #title := "Turing Tape", #defaultWidth := 600, #defaultHeight := 200 ]
 
     -- Create a vertical box layout
-    vbox <- Gtk.boxNew Gtk.OrientationVertical 10
-    Gtk.containerAdd window vbox
+    vbox <- new Gtk.Box [ #orientation := Gtk.OrientationVertical, #spacing := 10 ]
+    #add window vbox
 
     -- Create a grid for the tape
-    grid <- Gtk.gridNew
-    Gtk.boxPackStart vbox grid True True 0
+    grid <- new Gtk.Grid []
+    #packStart vbox grid True True 0
 
-    -- Tape state: list of symbols and the current head position
-    let initialTape = replicate 5 "0" ++ ["1"] ++ replicate 5 "0"
-    tapeRef <- newIORef (initialTape, 5)
+    -- Tape state: using the actual tape datatype
+    -- We're assuming that the tape is passed to this in such a way that
+    --   its modifications don't pass to the interpreter
+    let initialTape = Tape (repeat 0) 1 (repeat 0) :: Tape Word8
+    tapeRef <- newIORef initialTape
 
     -- Draw the initial tape
     drawTape grid tapeRef
 
     -- Create a horizontal box for buttons
-    hbox <- Gtk.boxNew Gtk.OrientationHorizontal 10
-    Gtk.boxPackStart vbox hbox False False 0
+    hbox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal, #spacing := 10 ]
+    #packStart vbox hbox False False 0
 
     -- Navigation buttons
-    btnLeft <- new Gtk.Button [#label     := "Left" ]
-    btnRight <- new Gtk.Button [#label     := "Right" ]
-    Gtk.boxPackStart hbox btnLeft True True 0
-    Gtk.boxPackStart hbox btnRight True True 0
+    btnLeft <- new Gtk.Button [ #label := "Left" ]
+    btnRight <- new Gtk.Button [ #label := "Right" ]
+    #packStart hbox btnLeft True True 0
+    #packStart hbox btnRight True True 0
 
     -- Button actions
-    _ <- Gtk.onButtonClicked btnLeft $ do
-        modifyIORef' tapeRef (moveTape (-1))
+    _ <- on btnLeft #clicked $ do
+        modifyIORef' tapeRef shiftLeft
         drawTape grid tapeRef
 
-    _ <- Gtk.onButtonClicked btnRight $ do
-        modifyIORef' tapeRef (moveTape 1)
+    _ <- on btnRight #clicked $ do
+        modifyIORef' tapeRef shiftRight
         drawTape grid tapeRef
 
     -- Close application on window destroy
-    _ <- Gtk.onWidgetDestroy window Gtk.mainQuit
+    _ <- on window #destroy Gtk.mainQuit
 
     -- Show all widgets
-    Gtk.widgetShowAll window
+    #showAll window
     Gtk.main
 
--- Move the tape head
-moveTape :: Int -> ([String], Int) -> ([String], Int)
-moveTape direction (tape, idx) = (tape, max 0 (min (length tape - 1) (idx + direction)))
-
 -- Draw the tape on the grid
-drawTape :: Gtk.Grid -> IORef ([String], Int) -> IO ()
+drawTape :: Gtk.Grid -> IORef (Tape Word8) -> IO ()
 drawTape grid tapeRef = do
-    (tape, idx) <- readIORef tapeRef
+    tape <- readIORef tapeRef
 
     -- Clear the grid by destroying its children
     children <- Gtk.containerGetChildren grid
     mapM_ Gtk.widgetDestroy children
 
+    let windowSize = 11
+        index = div (windowSize - 1) 2
+        Tape prev i suc = tape
+        cells = reverse (take index prev) ++ [i] ++ take (windowSize - index - 1) suc
+
     -- Draw each tape cell
-    mapM_ (uncurry (drawCell grid idx)) (zip tape [0 ..])
+    mapM_ (uncurry (drawCell grid index)) (zip cells [0..(windowSize - 1)])
+
+    #showAll grid
 
 -- Draw a single cell
-drawCell :: Gtk.Grid -> Int -> String -> Int -> IO ()
+drawCell :: Gtk.Grid -> Int -> Word8 -> Int -> IO ()
 drawCell grid currentIdx content pos = do
-    let labelText = T.pack content
-    label <- Gtk.labelNew (Just labelText)
+    let labelText = T.pack (show content)
+    label <- new Gtk.Label [ #label := labelText ]
 
     -- Highlight the active cell
     if pos == currentIdx
-        then Gtk.widgetSetName [label := "active-cell"]
-        else Gtk.widgetSetName [label  := "normal-cell"]
+        then Gtk.widgetSetName label "active-cell"
+        else Gtk.widgetSetName label "normal-cell"
 
-    Gtk.gridAttach grid label pos 0 1 1
+    Gtk.gridAttach grid label (fromIntegral pos) 0 1 1
+    #show label
