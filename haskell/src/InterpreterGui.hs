@@ -14,8 +14,9 @@ import qualified GI.GObject.Functions as Gi.GObjects
 import qualified Data.GI.Base as Gi.Gdk
 import Data.Map (Map, lookup, insert, empty)
 import Data.IORef (IORef)
-import GHC.IORef
-import TapeGUI
+import GHC.IORef (writeIORef, IORef)
+import TapeGUI (drawTape)
+import GI.Gdk (set, AttrOp ((:=)))
 -- wrapper on InterpreterBase such that it works with gi-gtk :)
 
 data EvalState = RunMode | StepMode
@@ -28,6 +29,8 @@ data GUIState = GUIState
   , stepperLock :: MVar ()
   , tapeRef     :: IORef (Tape Word8)
   , tapeGrid    :: Gtk.Grid
+  , nextButton  :: Gtk.Button
+  , offsetRef   :: IORef Int
   }
 
 type GUIMonad = ReaderT GUIState IO
@@ -38,16 +41,28 @@ instance Interpreter GUIMonad where
                                     , bracketMap   = bracketMap
                                     , sourceCode   = sourceCode
                                     , tape         = tape } = do
-    GUIState {stepperLock = stepperLock, evalState = evalState, tapeRef = tapeRef, tapeGrid = tapeGrid} <- ask
+    GUIState { stepperLock = stepperLock
+             , evalState  = evalState
+             , tapeRef    = tapeRef
+             , tapeGrid   = tapeGrid
+             , nextButton = nextButton
+             , offsetRef  = offsetRef } <- ask
     liftIO $ writeIORef tapeRef tape
     liftIO $ void $ GLib.idleAdd GLib.PRIORITY_DEFAULT_IDLE $ do
-      drawTape tapeGrid tapeRef
+      writeIORef offsetRef 0
+      drawTape tapeGrid tapeRef offsetRef
       return GLib.SOURCE_REMOVE
-    case evalState of
-      RunMode -> f readingIndex bracketMap sourceCode tape
-      StepMode -> do
-        liftIO $ takeMVar stepperLock
-        f readingIndex bracketMap sourceCode tape
+    if readingIndex >= length sourceCode
+      then do
+        liftIO $ void $ GLib.idleAdd GLib.PRIORITY_DEFAULT_IDLE $ do
+          set nextButton [#sensitive := False]
+          return GLib.SOURCE_REMOVE
+        return tape
+      else case evalState of
+        RunMode -> f readingIndex bracketMap sourceCode tape
+        StepMode -> do
+          liftIO $ takeMVar stepperLock
+          f readingIndex bracketMap sourceCode tape
 
   writeInputFromTape :: Tape Word8 -> GUIMonad (Tape Word8)
   writeInputFromTape tape = do
