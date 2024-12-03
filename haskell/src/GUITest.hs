@@ -14,8 +14,8 @@ import Tape (Tape(..), store, index, shiftLeft, shiftRight)
 import Control.Concurrent (forkIO, newEmptyMVar, tryTakeMVar, putMVar, killThread)
 import qualified GI.GLib as GLib
 import qualified GI.Gdk as Gdk
-import Data.IORef ( modifyIORef', newIORef, readIORef, writeIORef )
-import TapeGUI ( drawTape )
+import Data.IORef (modifyIORef', newIORef, readIORef, writeIORef)
+import TapeGUI (drawTape)
 
 activate :: Gtk.Application -> IO ()
 activate app = do
@@ -27,21 +27,23 @@ activate app = do
   (leftButton, lockedLeftButton) <- createButton "Left" True
   (rightButton, lockedRightButton) <- createButton "Right" True
 
+  set simGrid [#halign := Gtk.AlignCenter]
   #packStart simButtonBox lockedLeftButton True True 0
   #packStart simButtonBox lockedRightButton True True 0
-  #packStart simVbox simGrid True True 32
-  #packStart simVbox simButtonBox False False 32
+  #packStart simVbox simGrid True False 0
+  #packStart simVbox simButtonBox False False 0
   let initialTape = Tape (repeat 0) 0 (repeat 0) :: Tape Word8
   tapeRef <- newIORef initialTape
-  drawTape simGrid tapeRef
+  offsetRef <- newIORef 0
+  drawTape simGrid tapeRef offsetRef
 
   on leftButton #clicked $ do
-    modifyIORef' tapeRef shiftLeft
-    drawTape simGrid tapeRef
+    modifyIORef' offsetRef pred
+    drawTape simGrid tapeRef offsetRef
 
   on rightButton #clicked $ do
-    modifyIORef' tapeRef shiftRight
-    drawTape simGrid tapeRef
+    modifyIORef' offsetRef succ
+    drawTape simGrid tapeRef offsetRef
 
   --------------------------------------------------------------------------------------------
 
@@ -125,7 +127,9 @@ activate app = do
                  , evalState   = RunMode
                  , stepperLock = stepperLock
                  , tapeRef     = tapeRef
-                 , tapeGrid    = simGrid }
+                 , tapeGrid    = simGrid
+                 , nextButton  = nextButton
+                 , offsetRef   = offsetRef }
     liftIO $ writeIORef interpreterThreadRef (Just threadId)
     return ()
 
@@ -139,7 +143,8 @@ activate app = do
     liftIO $ void $ tryTakeMVar stepperLock
     Gtk.textBufferSetText outputBuffer "" (-1)
     writeIORef tapeRef initialTape
-    drawTape simGrid tapeRef
+    writeIORef offsetRef 0
+    drawTape simGrid tapeRef offsetRef
     maybeThreadId <- readIORef interpreterThreadRef
     case maybeThreadId of
       Just threadId -> do
@@ -167,7 +172,9 @@ activate app = do
                  , evalState   = StepMode
                  , stepperLock = stepperLock
                  , tapeRef     = tapeRef
-                 , tapeGrid    = simGrid }
+                 , tapeGrid    = simGrid
+                 , nextButton  = nextButton
+                 , offsetRef   = offsetRef }
     liftIO $ writeIORef interpreterThreadRef (Just threadId)
     return ()
 
@@ -187,18 +194,19 @@ activate app = do
   vbox      <- new Gtk.Box [ #orientation := Gtk.OrientationVertical ]
   buttonBox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
   terminal  <- new Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+  set buttonBox [#halign := Gtk.AlignCenter]
   #packStart hbox scrolledWindowEntry True True 32
   #packStart terminal scrolledWindowOutput True True 0
   #packStart terminal inputBox False False 0
   #setSizeRequest inputBox (-1) 32
   #packStart vbox terminal True True 32
+  #packStart vbox simVbox True True 32
   #packStart buttonBox lockedButton False False 16
   #packStart buttonBox lockedStepButton False False 16
   #packStart buttonBox lockedNextButton False False 16
   #packStart buttonBox lockedResetButton False False 16
   #packStart vbox buttonBox True True 32
   #packStart hbox vbox True True 32
-  #packStart hbox simVbox True True 32
 
   -- adding bounding box to main window
   window <- new Gtk.ApplicationWindow
