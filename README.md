@@ -6,6 +6,8 @@ An integrated development environment for the esolang brainfuck. It includes a t
 
 This project is in fulfillment of the [CPSC 312 2024W1 project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html).
 
+**A note for the grader:**  Parsec was mentioned in the proposal as a means to parse and tokenise the brainfuck code, but we ended up using pure Haskell given that we didn't need the extensions that it provided for the intended behaviour of our program. We also thought it would make the interpreter code cleaner and more idiomatic.
+
 ## Team Members
 
 Our team is:
@@ -25,14 +27,13 @@ We surely built on the work of others! Here are resources and people we got supp
 + [Codeblocks from the Brainfuck Wikipedia page](https://en.wikipedia.org/wiki/Brainfuck) for tests and language understanding.
 + [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master) for tests.
 + [haskell-gi](https://github.com/haskell-gi) for a GUI. (well, bindings to a gui library more specifically)
-+ [Parsec](https://github.com/haskell/parsec) for a full-featured parsing library.
 
 ## Product Pitch
 
 Our full project idea is a complete integrated development environment (IDE) for brainfuck. Its features would include (but perhaps would not be limited to):
 
 + **A Fully-Featured Text Editor** with syntax highlighting, automatic code completion, and error detection.
-+ **A Realtime Interpreter** written entirely in haskell, including tokenisation, built with Parsec.
++ **A Realtime Interpreter** written entirely in haskell!
 + **A Turing Machine Simulator** allowing for a visual representation of the memory tape for further understanding about turing machine behaviour (Could be very nice to have when taking CPSC 121).
 + **A Debugger** that allows for stepping through the brainfuck code, setting breakpoints, and stepping in/out of loops (with insparation from the CPSC 213 machine).
 + **Variable Compilation Speed** to aid with turing machine understanding.
@@ -50,7 +51,7 @@ This builds on our haskell knowledge by looking into parsing using parsec, a par
 Our intended minimum viable product contains the following core functionalities:
 
 + **A Text editor** with syntax highlighting and mismatched bracket detection.
-+ **A Realtime Interpreter** written entirely in haskell, including tokenisation, built with Parsec.
++ **A Realtime Interpreter** written entirely in haskell!
 + **A Turing Machine Simulator** allowing for a visual representation of the memory tape for further understanding about turing machine behaviour (Could be very nice to have when taking CPSC 121).
 + **A Stepper** to allow for intimate understading of what's happening to the tape at every moment (similar in style to DrRacket's implementation).
 + **A Beautiful and Themeable GUI** using GNOME's GTK library for access to the wide range of extensions and themes it provides.
