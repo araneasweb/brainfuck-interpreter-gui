@@ -8,10 +8,10 @@ import Data.GI.Base (AttrOp((:=)), on, set, new)
 import qualified Data.Text as T
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (MonadIO(liftIO), ReaderT(runReaderT))
-import InterpreterGui (run, GUIState (..))
+import InterpreterGui (run, GUIState (..), EvalState (..))
 import Data.Binary (Word8)
 import Tape (Tape(..), store, index)
-import Control.Concurrent (forkIO)
+import Control.Concurrent (forkIO, newEmptyMVar, tryTakeMVar, putMVar)
 import qualified GI.GLib as GLib
 import qualified GI.Gdk as Gdk
 
@@ -22,6 +22,7 @@ activate app = do
   (button, lockedButton) <- createButton "Run" True
   (resetButton, lockedResetButton) <- createButton "Reset" False
   (stepButton, lockedStepButton) <- createButton "Step" True
+  (nextButton, lockedNextButton) <- createButton "Next" False
 
   -- bottom half of the console that works with the "," command
   (sendButton, lockedSendButton) <- createButton "Send" False
@@ -76,14 +77,16 @@ activate app = do
 
     matchBrackets buffer errorTag bracketTags
 
+  stepperLock <- newEmptyMVar
+
   -- starting interpreter when run button is clicked
   on button #clicked $ do
     set button [#sensitive := False]
     set resetButton [#sensitive := True]
-    buffer    <- #getBuffer entry
-    startIter <- #getStartIter buffer
-    endIter   <- #getEndIter buffer
-    text      <- #getText buffer startIter endIter False
+    buffer       <- #getBuffer entry
+    startIter    <- #getStartIter buffer
+    endIter      <- #getEndIter buffer
+    text         <- #getText buffer startIter endIter False
     outputBuffer <- #getBuffer outputView
     Gtk.textBufferSetText outputBuffer "" (-1)
     _ <- liftIO $ forkIO $ void $
@@ -91,19 +94,42 @@ activate app = do
         GUIState { outputView  = outputView
                  , inputField  = inputEntry
                  , inputToggle = sendButton
-                 , stepToggle  = stepButton }
+                 , evalState   = RunMode
+                 , stepperLock = stepperLock }
     return ()
 
   -- reset clears the output view, unlocks run, and locks itself
   on resetButton #clicked $ do
-    set button [#sensitive := True]
+    set button      [#sensitive := True]
+    set stepButton  [#sensitive := True]
     set resetButton [#sensitive := False]
+    set nextButton  [#sensitive := False]
     outputBuffer <- #getBuffer outputView
+    liftIO $ void $ tryTakeMVar stepperLock
     Gtk.textBufferSetText outputBuffer "" (-1)
 
   on stepButton #clicked $ do
-    set button [#sensitive := False]
+    set button      [#sensitive := False]
+    set stepButton  [#sensitive := False]
     set resetButton [#sensitive := True]
+    set nextButton  [#sensitive := True]
+    buffer       <- #getBuffer entry
+    startIter    <- #getStartIter buffer
+    endIter      <- #getEndIter buffer
+    text         <- #getText buffer startIter endIter False
+    outputBuffer <- #getBuffer outputView
+    Gtk.textBufferSetText outputBuffer "" (-1)
+    _ <- liftIO $ forkIO $ void $
+      runReaderT (InterpreterGui.run (T.unpack text))
+        GUIState { outputView  = outputView
+                 , inputField  = inputEntry
+                 , inputToggle = sendButton
+                 , evalState   = StepMode
+                 , stepperLock = stepperLock }
+    return ()
+
+  on nextButton #clicked $ do
+    liftIO $ putMVar stepperLock ()
 
   -- GUI margins
   #setMarginTop scrolledWindowEntry 32
@@ -125,6 +151,7 @@ activate app = do
   #packStart vbox terminal True True 32
   #packStart buttonBox lockedButton False False 16
   #packStart buttonBox lockedStepButton False False 16
+  #packStart buttonBox lockedNextButton False False 16
   #packStart buttonBox lockedResetButton False False 16
   #packStart vbox buttonBox True True 32
   #packStart hbox vbox True True 32

@@ -1,38 +1,41 @@
 {-# LANGUAGE OverloadedStrings, OverloadedLabels, InstanceSigs, FlexibleInstances #-}
-module InterpreterGui(GUIState (..), run) where
+module InterpreterGui(GUIState (..), run, EvalState(..)) where
 
 import Control.Monad (void)
 import qualified GI.Gtk as Gtk
 import qualified Data.Text as T
 import Control.Monad.Reader (MonadIO(liftIO), MonadReader(ask), ReaderT)
-import Data.Binary (Word8)
+import Data.Binary ( Word8 )
 import Tape (Tape(..), store, index)
-import Control.Concurrent (newEmptyMVar, putMVar, takeMVar)
+import Control.Concurrent (newEmptyMVar, putMVar, takeMVar, MVar(..))
 import qualified GI.GLib as GLib
-import InterpreterBase (Interpreter(..), run)
+import InterpreterBase (Interpreter(..), run, InterpreterState(..))
 import qualified GI.GObject.Functions as Gi.GObjects
 import qualified Data.GI.Base as Gi.Gdk
-import Data.Sequence (Seq (..))
-
-import InterpreterBase (Interpreter(..), run, InterpreterState(..))
-import Data.Binary (Word8)
 import Data.Map (Map, lookup, insert, empty)
-import Tape (store, index, Tape)
 -- wrapper on InterpreterBase such that it works with gi-gtk :)
+
+data EvalState = RunMode | StepMode
 
 data GUIState = GUIState
   { outputView  :: Gtk.TextView
   , inputField  :: Gtk.Entry
   , inputToggle :: Gtk.Button
-  , stepToggle  :: Gtk.Button
-  , evalQueue   :: Seq InterpreterState
+  , evalState   :: EvalState
+  , stepperLock :: MVar ()
   }
 
 type GUIMonad = ReaderT GUIState IO
 
 instance Interpreter GUIMonad where
-  recurseStandby :: (Int -> Map Int Int -> String -> (Tape Word8) -> GUIMonad (Tape Word8)) -> InterpreterState -> GUIMonad (Tape Word8) 
-  recurseStandby f InterpreterState {readingIndex = readingIndex, bracketMap = bracketMap, sourceCode = sourceCode, tape = tape} = f readingIndex bracketMap sourceCode tape
+  recurseStandby :: (Int -> Map Int Int -> String -> Tape Word8 -> GUIMonad (Tape Word8)) -> InterpreterState -> GUIMonad (Tape Word8)
+  recurseStandby f InterpreterState { readingIndex = readingIndex, bracketMap = bracketMap, sourceCode = sourceCode, tape = tape} = do
+    GUIState{stepperLock = stepperLock, evalState = evalState} <- ask
+    case evalState of
+      RunMode -> f readingIndex bracketMap sourceCode tape
+      StepMode -> do
+        liftIO $ takeMVar stepperLock
+        f readingIndex bracketMap sourceCode tape
 
   writeInputFromTape :: Tape Word8 -> GUIMonad (Tape Word8)
   writeInputFromTape tape = do

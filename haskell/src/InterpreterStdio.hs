@@ -16,7 +16,7 @@ toChar :: Word8 -> Char
 toChar = toEnum.fromIntegral
 
 instance Interpreter IO where
-  recurseStandby :: (Int -> Map Int Int -> String -> (Tape Word8) -> IO (Tape Word8)) -> InterpreterState -> IO (Tape Word8) 
+  recurseStandby :: (Int -> Map Int Int -> String -> Tape Word8 -> IO (Tape Word8)) -> InterpreterState -> IO (Tape Word8)
   recurseStandby f InterpreterState {readingIndex = readingIndex, bracketMap = bracketMap, sourceCode = sourceCode, tape = tape} = f readingIndex bracketMap sourceCode tape
 
   writeInputFromTape :: Tape Word8 -> IO (Tape Word8)
