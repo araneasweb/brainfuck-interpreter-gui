@@ -21,6 +21,7 @@ activate app = do
   -- run and reset buttons
   (button, lockedButton) <- createButton "Run" True
   (resetButton, lockedResetButton) <- createButton "Reset" False
+  (stepButton, lockedStepButton) <- createButton "Step" True
 
   -- bottom half of the console that works with the "," command
   (sendButton, lockedSendButton) <- createButton "Send" False
@@ -89,7 +90,8 @@ activate app = do
       runReaderT (InterpreterGui.run (T.unpack text))
         GUIState { outputView  = outputView
                  , inputField  = inputEntry
-                 , inputToggle = sendButton }
+                 , inputToggle = sendButton
+                 , stepToggle  = stepButton }
     return ()
 
   -- reset clears the output view, unlocks run, and locks itself
@@ -98,6 +100,10 @@ activate app = do
     set resetButton [#sensitive := False]
     outputBuffer <- #getBuffer outputView
     Gtk.textBufferSetText outputBuffer "" (-1)
+
+  on stepButton #clicked $ do
+    set button [#sensitive := False]
+    set resetButton [#sensitive := True]
 
   -- GUI margins
   #setMarginTop scrolledWindowEntry 32
@@ -118,6 +124,7 @@ activate app = do
   #setSizeRequest inputBox (-1) 32
   #packStart vbox terminal True True 32
   #packStart buttonBox lockedButton False False 16
+  #packStart buttonBox lockedStepButton False False 16
   #packStart buttonBox lockedResetButton False False 16
   #packStart vbox buttonBox True True 32
   #packStart hbox vbox True True 32

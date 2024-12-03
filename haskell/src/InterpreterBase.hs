@@ -49,10 +49,10 @@ buildBracketMap s = buildMap s 0 [] empty
 -- If the operation is a '-', `dec` the table at the current index
 parseString :: Interpreter m => Maybe (Map Int Int) -> Tape Word8 -> String -> m (Tape Word8)
 parseString Nothing _ _ = error "mismatched braces"
-parseString (Just m) tape s = parseChars 0 tape
+parseString (Just bracketMap) tape string = parseChars 0 bracketMap string tape
   where
-    parseChars :: Interpreter m => Int -> Tape Word8 -> m (Tape Word8)
-    parseChars i t -- get it because
+    parseChars :: Interpreter m => Int -> Map Int Int -> String -> Tape Word8 -> m (Tape Word8)
+    parseChars i m s t -- get it because
       | i >= length s = return t
       | otherwise = case s !! i of
           '.' -> writeInputFromTape t >>= parseInc
@@ -67,10 +67,11 @@ parseString (Just m) tape s = parseChars 0 tape
               | otherwise    -> parseInc t
           _   -> parseInc t -- might be more efficient to just prune comments at the beginning (before bracketmap too)
       where
-        parseInc t = recurseStandby (parseChars (i + 1) t)
+        parseInc t = recurseStandby (parseChars (i + 1) m s t)
         jump = case Data.Map.lookup i m of
-                Just j  -> parseChars (j + 1) t
+                Just j  -> recurseStandby (parseChars (j + 1) m s t)
                 Nothing -> error "mismatched braces" -- should never happen
+
 
 -- | runs the interpreter with an empty tape and initialised bracketmap
 run :: Interpreter m => String -> m (Tape Word8)
