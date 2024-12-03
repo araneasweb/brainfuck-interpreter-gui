@@ -12,12 +12,15 @@ import qualified GI.GLib as GLib
 import InterpreterBase (Interpreter(..), run)
 import qualified GI.GObject.Functions as Gi.GObjects
 import qualified Data.GI.Base as Gi.Gdk
+import Data.Sequence (Seq (..))
 -- wrapper on InterpreterBase such that it works with gi-gtk :)
 
 data GUIState = GUIState
   { outputView  :: Gtk.TextView
   , inputField  :: Gtk.Entry
   , inputToggle :: Gtk.Button
+  , stepToggle  :: Gtk.Button
+  -- , evalQueue   :: Seq
   }
 
 type GUIMonad = ReaderT GUIState IO
