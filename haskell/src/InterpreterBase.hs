@@ -1,9 +1,15 @@
-module InterpreterBase(Interpreter(..), run, buildBracketMap) where
+module InterpreterBase(Interpreter(..), run, InterpreterState(..)) where
 import Data.Binary (Word8)
 import Data.Map (Map, lookup, insert, empty)
 import Control.Monad (void)
 import Tape (Tape(..), shiftRight, shiftLeft, inc, dec, store, index)
 
+
+data InterpreterState = InterpreterState 
+  { readingIndex :: Int
+  , bracketMap   :: Map Int Int
+  , sourceCode   :: String
+  , tape         :: Tape Word8 }
 
 -- | A monad that defines the IO actions that would happen with the interpteter
 --
@@ -12,7 +18,8 @@ import Tape (Tape(..), shiftRight, shiftLeft, inc, dec, store, index)
 -- * @writeInputFromTape@, called when the interpreter wants to write something to the tty @[Tape Word8 -> m (Tape Word8)]@
 -- * @writeInputToTape@, called when the interpreter wants a user input (single character in) @[Tape Word8 -> m (Tape Word8)]@
 class Monad m => Interpreter m where
-  recurseStandby :: m (Tape Word8) -> m (Tape Word8)
+  -- recurseStandby :: m (Tape Word8) -> m (Tape Word8)
+  recurseStandby :: (Int -> Map Int Int -> String -> (Tape Word8) -> m (Tape Word8)) -> InterpreterState -> m (Tape Word8) 
   writeInputFromTape :: Tape Word8 -> m (Tape Word8)
   writeInputToTape :: Tape Word8 -> m (Tape Word8)
 
@@ -67,9 +74,15 @@ parseString (Just bracketMap) tape string = parseChars 0 bracketMap string tape
               | otherwise    -> parseInc t
           _   -> parseInc t -- might be more efficient to just prune comments at the beginning (before bracketmap too)
       where
-        parseInc t = recurseStandby (parseChars (i + 1) m s t)
+        parseInc t = recurseStandby parseChars InterpreterState { readingIndex = (i+1)
+                                                                , bracketMap   = m 
+                                                                , sourceCode   = s 
+                                                                , tape         = t }
         jump = case Data.Map.lookup i m of
-                Just j  -> recurseStandby (parseChars (j + 1) m s t)
+                Just j  -> recurseStandby parseChars InterpreterState { readingIndex = (j+1)
+                                                                      , bracketMap   = m 
+                                                                      , sourceCode   = s 
+                                                                      , tape         = t }
                 Nothing -> error "mismatched braces" -- should never happen
 
 
