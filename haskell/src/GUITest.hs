@@ -10,32 +10,59 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (MonadIO(liftIO), ReaderT(runReaderT))
 import InterpreterGui (run, GUIState (..), EvalState (..))
 import Data.Binary (Word8)
-import Tape (Tape(..), store, index)
-import Control.Concurrent (forkIO, newEmptyMVar, tryTakeMVar, putMVar)
+import Tape (Tape(..), store, index, shiftLeft, shiftRight)
+import Control.Concurrent (forkIO, newEmptyMVar, tryTakeMVar, putMVar, killThread)
 import qualified GI.GLib as GLib
 import qualified GI.Gdk as Gdk
+import Data.IORef ( modifyIORef', newIORef, readIORef, writeIORef )
+import TapeGUI ( drawTape )
 
 activate :: Gtk.Application -> IO ()
 activate app = do
 
+  ------------------------------------ TURING SIM STUFF --------------------------------------
+  simVbox      <- new Gtk.Box  [ #orientation := Gtk.OrientationVertical, #spacing := 10 ]
+  simGrid      <- new Gtk.Grid [ #columnSpacing := 10 ]
+  simButtonBox <- new Gtk.Box  [ #orientation := Gtk.OrientationHorizontal, #spacing := 10 ]
+  (leftButton, lockedLeftButton) <- createButton "Left" True
+  (rightButton, lockedRightButton) <- createButton "Right" True
+
+  #packStart simButtonBox lockedLeftButton True True 0
+  #packStart simButtonBox lockedRightButton True True 0
+  #packStart simVbox simGrid True True 32
+  #packStart simVbox simButtonBox False False 32
+  let initialTape = Tape (repeat 0) 0 (repeat 0) :: Tape Word8
+  tapeRef <- newIORef initialTape
+  drawTape simGrid tapeRef
+
+  on leftButton #clicked $ do
+    modifyIORef' tapeRef shiftLeft
+    drawTape simGrid tapeRef
+
+  on rightButton #clicked $ do
+    modifyIORef' tapeRef shiftRight
+    drawTape simGrid tapeRef
+
+  --------------------------------------------------------------------------------------------
+
   -- run and reset buttons
-  (button, lockedButton) <- createButton "Run" True
+  (button, lockedButton)           <- createButton "Run" True
   (resetButton, lockedResetButton) <- createButton "Reset" False
-  (stepButton, lockedStepButton) <- createButton "Step" True
-  (nextButton, lockedNextButton) <- createButton "Next" False
+  (stepButton, lockedStepButton)   <- createButton "Step" True
+  (nextButton, lockedNextButton)   <- createButton "Next" False
 
   -- bottom half of the console that works with the "," command
-  (sendButton, lockedSendButton) <- createButton "Send" False
+  (sendButton, lockedSendButton)   <- createButton "Send" False
   inputEntry <- new Gtk.Entry [ #sensitive := False ]
-  inputBox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
+  inputBox   <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
   #packStart inputBox inputEntry True True 0
   #packStart inputBox lockedSendButton False False 0
 
   -- adding the brainfuck text entry box and the pseudo-cout box
-  entry <- new Gtk.TextView []
+  entry      <- new Gtk.TextView []
   outputView <- new Gtk.TextView []
   Gtk.textViewSetEditable outputView False
-  scrolledWindowEntry <- new Gtk.ScrolledWindow []
+  scrolledWindowEntry  <- new Gtk.ScrolledWindow []
   #setPolicy scrolledWindowEntry Gtk.PolicyTypeAlways Gtk.PolicyTypeAutomatic
   #add scrolledWindowEntry entry
   scrolledWindowOutput <- new Gtk.ScrolledWindow []
@@ -78,6 +105,7 @@ activate app = do
     matchBrackets buffer errorTag bracketTags
 
   stepperLock <- newEmptyMVar
+  interpreterThreadRef <- newIORef Nothing
 
   -- starting interpreter when run button is clicked
   on button #clicked $ do
@@ -89,13 +117,16 @@ activate app = do
     text         <- #getText buffer startIter endIter False
     outputBuffer <- #getBuffer outputView
     Gtk.textBufferSetText outputBuffer "" (-1)
-    _ <- liftIO $ forkIO $ void $
+    threadId <- liftIO $ forkIO $ void $
       runReaderT (InterpreterGui.run (T.unpack text))
         GUIState { outputView  = outputView
                  , inputField  = inputEntry
                  , inputToggle = sendButton
                  , evalState   = RunMode
-                 , stepperLock = stepperLock }
+                 , stepperLock = stepperLock
+                 , tapeRef     = tapeRef
+                 , tapeGrid    = simGrid }
+    liftIO $ writeIORef interpreterThreadRef (Just threadId)
     return ()
 
   -- reset clears the output view, unlocks run, and locks itself
@@ -107,6 +138,15 @@ activate app = do
     outputBuffer <- #getBuffer outputView
     liftIO $ void $ tryTakeMVar stepperLock
     Gtk.textBufferSetText outputBuffer "" (-1)
+    writeIORef tapeRef initialTape
+    drawTape simGrid tapeRef
+    maybeThreadId <- readIORef interpreterThreadRef
+    case maybeThreadId of
+      Just threadId -> do
+        liftIO $ killThread threadId
+        liftIO $ writeIORef interpreterThreadRef Nothing
+      Nothing -> return ()
+
 
   on stepButton #clicked $ do
     set button      [#sensitive := False]
@@ -119,13 +159,16 @@ activate app = do
     text         <- #getText buffer startIter endIter False
     outputBuffer <- #getBuffer outputView
     Gtk.textBufferSetText outputBuffer "" (-1)
-    _ <- liftIO $ forkIO $ void $
+    threadId <- liftIO $ forkIO $ void $
       runReaderT (InterpreterGui.run (T.unpack text))
         GUIState { outputView  = outputView
                  , inputField  = inputEntry
                  , inputToggle = sendButton
                  , evalState   = StepMode
-                 , stepperLock = stepperLock }
+                 , stepperLock = stepperLock
+                 , tapeRef     = tapeRef
+                 , tapeGrid    = simGrid }
+    liftIO $ writeIORef interpreterThreadRef (Just threadId)
     return ()
 
   on nextButton #clicked $ do
@@ -140,8 +183,8 @@ activate app = do
   #setMarginBottom resetButton 32
 
   -- adding all the elements to boxes for shape and bounding
-  hbox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
-  vbox <- new Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+  hbox      <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
+  vbox      <- new Gtk.Box [ #orientation := Gtk.OrientationVertical ]
   buttonBox <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
   terminal  <- new Gtk.Box [ #orientation := Gtk.OrientationVertical ]
   #packStart hbox scrolledWindowEntry True True 32
@@ -155,6 +198,7 @@ activate app = do
   #packStart buttonBox lockedResetButton False False 16
   #packStart vbox buttonBox True True 32
   #packStart hbox vbox True True 32
+  #packStart hbox simVbox True True 32
 
   -- adding bounding box to main window
   window <- new Gtk.ApplicationWindow
@@ -236,6 +280,7 @@ createTag code tagTable = do
   _   <- #add tagTable tag
   set tag [ #foreground := code ]
   return tag
+
 
 run :: IO ()
 run = do

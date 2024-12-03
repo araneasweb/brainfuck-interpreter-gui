@@ -76,7 +76,7 @@ parseString (Just bracketMap) tape string = parseChars 0 bracketMap string tape
               | otherwise    -> parseInc t
           ']' | index t /= 0 -> jump
               | otherwise    -> parseInc t
-          _   -> parseInc t -- might be more efficient to just prune comments at the beginning (before bracketmap too)
+          _   -> parseInc t -- should never happen
       where
         parseInc t = recurseStandby parseChars InterpreterState { readingIndex = i+1
                                                                 , bracketMap   = m
@@ -89,9 +89,14 @@ parseString (Just bracketMap) tape string = parseChars 0 bracketMap string tape
                                                                       , tape         = t }
                 Nothing -> error "mismatched braces" -- should never happen
 
+pruneString :: String -> String
+pruneString [] = []
+pruneString (x:xs) | x `notElem` ".,<>+-[]" = pruneString xs
+                   | otherwise              = x : pruneString xs
 
 -- | runs the interpreter with an empty tape and initialised bracketmap
 run :: Interpreter m => String -> m (Tape Word8)
-run s = parseString (buildBracketMap s) (Tape (repeat 0) 0 (repeat 0)) s
+run s = parseString (buildBracketMap ps) (Tape (repeat 0) 0 (repeat 0)) ps
+  where ps = pruneString s
 
 

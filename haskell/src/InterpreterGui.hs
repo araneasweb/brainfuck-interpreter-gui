@@ -13,6 +13,9 @@ import InterpreterBase (Interpreter(..), run, InterpreterState(..))
 import qualified GI.GObject.Functions as Gi.GObjects
 import qualified Data.GI.Base as Gi.Gdk
 import Data.Map (Map, lookup, insert, empty)
+import Data.IORef (IORef)
+import GHC.IORef
+import TapeGUI
 -- wrapper on InterpreterBase such that it works with gi-gtk :)
 
 data EvalState = RunMode | StepMode
@@ -23,14 +26,23 @@ data GUIState = GUIState
   , inputToggle :: Gtk.Button
   , evalState   :: EvalState
   , stepperLock :: MVar ()
+  , tapeRef     :: IORef (Tape Word8)
+  , tapeGrid    :: Gtk.Grid
   }
 
 type GUIMonad = ReaderT GUIState IO
 
 instance Interpreter GUIMonad where
   recurseStandby :: (Int -> Map Int Int -> String -> Tape Word8 -> GUIMonad (Tape Word8)) -> InterpreterState -> GUIMonad (Tape Word8)
-  recurseStandby f InterpreterState { readingIndex = readingIndex, bracketMap = bracketMap, sourceCode = sourceCode, tape = tape} = do
-    GUIState{stepperLock = stepperLock, evalState = evalState} <- ask
+  recurseStandby f InterpreterState { readingIndex = readingIndex
+                                    , bracketMap   = bracketMap
+                                    , sourceCode   = sourceCode
+                                    , tape         = tape } = do
+    GUIState {stepperLock = stepperLock, evalState = evalState, tapeRef = tapeRef, tapeGrid = tapeGrid} <- ask
+    liftIO $ writeIORef tapeRef tape
+    liftIO $ void $ GLib.idleAdd GLib.PRIORITY_DEFAULT_IDLE $ do
+      drawTape tapeGrid tapeRef
+      return GLib.SOURCE_REMOVE
     case evalState of
       RunMode -> f readingIndex bracketMap sourceCode tape
       StepMode -> do
