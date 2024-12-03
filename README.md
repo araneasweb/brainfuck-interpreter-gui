@@ -133,7 +133,7 @@ parseString Nothing _ _ = error "mismatched braces"
 parseString (Just bracketMap) tape string = parseChars 0 bracketMap string tape
   where
     parseChars :: Interpreter m => Int -> Map Int Int -> String -> Tape Word8 -> m (Tape Word8)
-    parseChars i m s t -- get it because
+    parseChars i m s t
       | i >= length s = return t
       | otherwise = case s !! i of
           '.' -> writeInputFromTape t >>= parseInc
@@ -236,7 +236,7 @@ simButtonBox <- new Gtk.Box  [ #orientation := Gtk.OrientationHorizontal, #spaci
 (leftButton, lockedLeftButton) <- createButton "Left" True
 (rightButton, lockedRightButton) <- createButton "Right" True
 
-set simGrid [#halign := Gtk.AlignCenter]
+set simGrid [ #halign := Gtk.AlignCenter ]
 #packStart simButtonBox lockedLeftButton True True 0
 #packStart simButtonBox lockedRightButton True True 0
 #packStart simVbox simGrid True False 0
