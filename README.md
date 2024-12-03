@@ -102,6 +102,15 @@ index :: Tape a -> a
 index (Tape _ i _) = i
 ```
 
+#### Monad wrapper for interop with IO:&nbsp;
+
+```haskell
+class Monad m => Interpreter m where
+  recurseStandby :: (Int -> Map Int Int -> String -> Tape Word8 -> m (Tape Word8)) -> InterpreterState -> m (Tape Word8)
+  writeInputFromTape :: Tape Word8 -> m (Tape Word8)
+  writeInputToTape :: Tape Word8 -> m (Tape Word8)
+```
+
 #### Main Brainfuck Parsing Functions:&nbsp;
 
 ```haskell
@@ -118,11 +127,12 @@ buildBracketMap s = buildMap s 0 [] empty
       | otherwise = buildInc stack k
       where buildInc = buildMap xs (i + 1)
 
-parseString :: Maybe (Map Int Int) -> Tape Word8 -> String -> IO (Tape Word8)
+parseString :: Interpreter m => Maybe (Map Int Int) -> Tape Word8 -> String -> m (Tape Word8)
 parseString Nothing _ _ = error "mismatched braces"
-parseString (Just m) tape s = parseChars 0 tape
+parseString (Just bracketMap) tape string = parseChars 0 bracketMap string tape
   where
-    parseChars i t
+    parseChars :: Interpreter m => Int -> Map Int Int -> String -> Tape Word8 -> m (Tape Word8)
+    parseChars i m s t -- get it because
       | i >= length s = return t
       | otherwise = case s !! i of
           '.' -> writeInputFromTape t >>= parseInc
@@ -137,24 +147,111 @@ parseString (Just m) tape s = parseChars 0 tape
               | otherwise    -> parseInc t
           _   -> parseInc t
       where
-        parseInc = parseChars (i + 1)
+        parseInc t = recurseStandby parseChars InterpreterState { readingIndex = i+1
+                                                                , bracketMap   = m
+                                                                , sourceCode   = s
+                                                                , tape         = t }
         jump = case Data.Map.lookup i m of
-                Just j  -> parseChars (j + 1) t
+                Just j  -> recurseStandby parseChars InterpreterState { readingIndex = j+1
+                                                                      , bracketMap   = m
+                                                                      , sourceCode   = s
+                                                                      , tape         = t }
                 Nothing -> error "mismatched braces"
 ```
 
-#### Adding all GUI elements to window:&nbsp;
+#### Implementation of GUI User Input:&nbsp;
 
 ```haskell
-  hbox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal]
-  vbox <- new Gtk.Box [#orientation := Gtk.OrientationVertical]
-  buttonBox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal]
-  #packStart hbox scrolledWindowEntry True True 32
-  #packStart vbox scrolledWindowOutput True True 32
-  #packStart buttonBox lockedButton False False 16
-  #packStart buttonBox lockedResetButton False False 16
-  #packStart vbox buttonBox True True 32
-  #packStart hbox vbox True True 32
+writeInputToTape :: Tape Word8 -> GUIMonad (Tape Word8)
+writeInputToTape tape = do
+    GUIState {inputField = inputField, inputToggle = inputToggle} <- ask
+    resultVar <- liftIO newEmptyMVar
+    handlerIdVar <- liftIO newEmptyMVar
+    liftIO $ do
+        void $ GLib.idleAdd GLib.PRIORITY_DEFAULT_IDLE $ do
+            #setSensitive inputField True
+            #setSensitive inputToggle True
+            handlerId <- Gtk.on inputToggle #clicked $ do
+                inputText <- Gtk.entryGetText inputField
+                Gtk.entrySetText inputField ""
+                #setSensitive inputField False
+                #setSensitive inputToggle False
+                putMVar resultVar inputText
+            putMVar handlerIdVar handlerId
+            return GLib.SOURCE_REMOVE
+    inputText <- liftIO $ takeMVar resultVar
+    handlerId <- liftIO $ takeMVar handlerIdVar
+    liftIO $ Gi.GObjects.signalHandlerDisconnect inputToggle handlerId
+    return (if T.null inputText then store 0 tape else store (fromIntegral.fromEnum $ T.head inputText) tape)
+```
+
+#### Syntax Highlighting for brackets:&nbsp;
+
+```haskell
+matchBrackets :: Gtk.TextBuffer -> Gtk.TextTag -> [Gtk.TextTag] -> IO ()
+matchBrackets buffer errorTag bracketTags = do
+  iter <- Gtk.textBufferGetStartIter buffer
+  let loop currentIter stack i = do
+        isEnd <- Gtk.textIterIsEnd currentIter
+        unless isEnd $ do
+          char <- Gtk.textIterGetChar currentIter
+          stack' <- case char of
+            '[' -> do
+              copiedIter1 <- Gtk.textIterCopy currentIter
+              copiedIter2 <- Gtk.textIterCopy currentIter
+              _ <- Gtk.textIterForwardChar copiedIter2
+              #applyTag buffer errorTag currentIter copiedIter2
+              return (copiedIter1 : stack)
+            ']' -> do
+              case stack of
+                (lastIter:rest) -> do
+                  let bracketTag = bracketTags !! i
+
+                  copiedIter <- Gtk.textIterCopy lastIter
+                  _ <- Gtk.textIterForwardChar copiedIter
+                  #applyTag buffer bracketTag lastIter copiedIter
+
+                  copiedIter <- Gtk.textIterCopy currentIter
+                  _ <- Gtk.textIterForwardChar copiedIter
+                  #applyTag buffer bracketTag currentIter copiedIter
+                  return rest
+                [] -> do
+                  copiedIter <- Gtk.textIterCopy currentIter
+                  _ <- Gtk.textIterForwardChar copiedIter
+                  #applyTag buffer errorTag currentIter copiedIter
+                  return stack
+            _ -> return stack
+          moved <- Gtk.textIterForwardChar currentIter
+          when moved $ loop currentIter stack' (mod (i + 1) (length bracketTags))
+  loop iter [] 0
+```
+
+#### Part of the code for the GUI tape viewer:&nbsp;
+
+```haskell
+simVbox      <- new Gtk.Box  [ #orientation := Gtk.OrientationVertical, #spacing := 10 ]
+simGrid      <- new Gtk.Grid [ #columnSpacing := 10 ]
+simButtonBox <- new Gtk.Box  [ #orientation := Gtk.OrientationHorizontal, #spacing := 10 ]
+(leftButton, lockedLeftButton) <- createButton "Left" True
+(rightButton, lockedRightButton) <- createButton "Right" True
+
+set simGrid [#halign := Gtk.AlignCenter]
+#packStart simButtonBox lockedLeftButton True True 0
+#packStart simButtonBox lockedRightButton True True 0
+#packStart simVbox simGrid True False 0
+#packStart simVbox simButtonBox False False 0
+let initialTape = Tape (repeat 0) 0 (repeat 0) :: Tape Word8
+tapeRef <- newIORef initialTape
+offsetRef <- newIORef 0
+drawTape simGrid tapeRef offsetRef
+
+on leftButton #clicked $ do
+  modifyIORef' offsetRef pred
+  drawTape simGrid tapeRef offsetRef
+
+on rightButton #clicked $ do
+  modifyIORef' offsetRef succ
+  drawTape simGrid tapeRef offsetRef
 ```
 
 #### Invoking the GUI:&nbsp;
@@ -188,7 +285,7 @@ main = getArgs >>= handleArgs
 
 **Ensure you have the [nix package manager](https://nixos.org/download/) and the installed or the code will not compile!**
 
-**(For Debian based systems (including WSL2), must run ``sudo apt install nix-bin`` first.)**
+(For Debian based systems (including WSL2), must run ``sudo apt install nix-bin`` first.)
 
 To test the interpreter functionality, simply run `make` from the root directory or `make test` from `./haskell`.
 
@@ -211,10 +308,10 @@ Just a note: the tests using `Tasty` were removed in favour of an in-house teste
 |cairo|fontconfig|
 |haskell-gi-base|util-linux|
 |text|harfbuzz|
-|tasty|libselinux|
-|tasty-hunit|libsepol|
-||pkg-config|
-||xorg.libXdmcp|
+|mtl|libselinux|
+|gi-glib|libsepol|
+|gi-gdk|pkg-config|
+|gi-gobject|xorg.libXdmcp|
 ||gtk3|
 ||lerc|
 ||libthai|
