@@ -13,6 +13,11 @@ import InterpreterBase (Interpreter(..), run)
 import qualified GI.GObject.Functions as Gi.GObjects
 import qualified Data.GI.Base as Gi.Gdk
 import Data.Sequence (Seq (..))
+
+import InterpreterBase (Interpreter(..), run, InterpreterState(..))
+import Data.Binary (Word8)
+import Data.Map (Map, lookup, insert, empty)
+import Tape (store, index, Tape)
 -- wrapper on InterpreterBase such that it works with gi-gtk :)
 
 data GUIState = GUIState
@@ -20,14 +25,14 @@ data GUIState = GUIState
   , inputField  :: Gtk.Entry
   , inputToggle :: Gtk.Button
   , stepToggle  :: Gtk.Button
-  -- , evalQueue   :: Seq
+  , evalQueue   :: Seq InterpreterState
   }
 
 type GUIMonad = ReaderT GUIState IO
 
 instance Interpreter GUIMonad where
-  recurseStandby :: GUIMonad (Tape Word8) -> GUIMonad (Tape Word8)
-  recurseStandby = id -- TODO based on what the tape viewer looks like
+  recurseStandby :: (Int -> Map Int Int -> String -> (Tape Word8) -> GUIMonad (Tape Word8)) -> InterpreterState -> GUIMonad (Tape Word8) 
+  recurseStandby f InterpreterState {readingIndex = readingIndex, bracketMap = bracketMap, sourceCode = sourceCode, tape = tape} = f readingIndex bracketMap sourceCode tape
 
   writeInputFromTape :: Tape Word8 -> GUIMonad (Tape Word8)
   writeInputFromTape tape = do
