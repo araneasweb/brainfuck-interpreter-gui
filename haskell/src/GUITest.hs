@@ -299,6 +299,3 @@ run = do
     Just app -> do
       on app #activate (activate app)
       void $ #run app Nothing
-
-main :: IO ()
-main = GUITest.run
