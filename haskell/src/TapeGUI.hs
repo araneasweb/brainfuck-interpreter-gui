@@ -29,7 +29,7 @@ drawTape grid tapeRef offsetRef = do
 
 drawCell :: Gtk.Grid -> Int -> Int -> Word8 -> Int -> IO ()
 drawCell grid currentIdx offset content pos = do
-    let labelText = T.pack (show content)
+    let labelText = T.justifyRight 3 '0' (T.pack (show content))
     label <- new Gtk.Label [ #label := labelText ]
 
     if pos == currentIdx - offset
