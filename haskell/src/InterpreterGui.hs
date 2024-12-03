@@ -12,7 +12,7 @@ import qualified GI.GLib as GLib
 import InterpreterBase (Interpreter(..), run)
 import qualified GI.GObject.Functions as Gi.GObjects
 import qualified Data.GI.Base as Gi.Gdk
-import Data.Sequence (Seq (..))
+import Data.Sequence (Seq (..), (|>))
 
 import InterpreterBase (Interpreter(..), run, InterpreterState(..))
 import Data.Binary (Word8)
@@ -32,7 +32,12 @@ type GUIMonad = ReaderT GUIState IO
 
 instance Interpreter GUIMonad where
   recurseStandby :: (Int -> Map Int Int -> String -> (Tape Word8) -> GUIMonad (Tape Word8)) -> InterpreterState -> GUIMonad (Tape Word8) 
-  recurseStandby f InterpreterState {readingIndex = readingIndex, bracketMap = bracketMap, sourceCode = sourceCode, tape = tape} = f readingIndex bracketMap sourceCode tape
+  recurseStandby f InterpreterState {readingIndex = readingIndex, bracketMap = bracketMap, sourceCode = sourceCode, tape = tape} = undefined
+    -- do 
+    --   outputTape <- f readingIndex bracketMap sourceCode tape
+    --   enviroment {evalQueue = evalQueue} <- local id 
+    --   evalQueue |> outputTape
+    --   local 
 
   writeInputFromTape :: Tape Word8 -> GUIMonad (Tape Word8)
   writeInputFromTape tape = do
