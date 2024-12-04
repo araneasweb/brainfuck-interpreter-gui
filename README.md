@@ -30,6 +30,11 @@ We surely built on the work of others! Here are resources and people we got supp
 + [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master) for tests.
 + [haskell-gi](https://github.com/haskell-gi) for a GUI. (well, bindings to a gui library more specifically)
 
+
+## Video
+
+[Our MVP Video](LINK HERE)
+
 ## Guide to MVP
 
 Our MVP fulfills our proposal as we were able to successfully build a text editor and interpreter for Brainfuck using Haskell. Below, we've included a screenshot of our GUI for reference.
@@ -55,7 +60,6 @@ https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f5
 
 #### Part of the code for the GUI tape viewer:&nbsp;
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/GUITest.hs#L24-L46
-
 
 ## Guide to our learning
 
