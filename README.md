@@ -30,18 +30,17 @@ We surely built on the work of others! Here are resources and people we got supp
 + [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master) for tests.
 + [haskell-gi](https://github.com/haskell-gi) for a GUI. (well, bindings to a gui library more specifically)
 
-
 ## Video
 
 [Our MVP Video](https://drive.google.com/file/d/1bmb5Wfqyfk52jdlCS2s2ZvibwPv23d6g/view?usp=sharing)
 
 ## Guide to MVP
 
-Our MVP fulfills our proposal as we were able to successfully build a text editor and interpreter for Brainfuck using Haskell. Below, we've included a screenshot of our GUI for reference.
+Our MVP fulfills our proposal as we were able to successfully build a text editor and interpreter for Brainfuck using Haskell with all the features indicated in said proposal. Below, we've included a screenshot of our GUI for reference.
 
 ![GUI Example](./interpreter_gui_example.jpg)
 
-The textbox to the left is where users may input their Brainfuck code. It features syntax highlighting as shown in the the provided screenshot (+, >, and . are highlighted in different colours), as well as mismatched bracket detection. After pressing the run button, users will be shown the output of their code in the textbox in the upper right, our terminal, after it has been interpreted by our backend code. Should the code request user input, this can be written in the textbox below the terminal, and submitted by pressing "Send". Below are two links to our code base that show the implementation this functionality.
+The textbox to the left is where users may input their Brainfuck code. It features syntax highlighting as shown in the the provided screenshot (the bit manipulation, memory shifting, and IO tokens are each highlighted in different colours along with the brackets being coloured dependent on depth), as well as mismatched bracket detection. After pressing the run button, users will be shown the output of their code in the textbox in the upper right, our terminal, after it has been interpreted by our backend code. Should the code request user input, this can be written in the textbox below the terminal, and submitted by pressing "Send". Below are two links to our code base that show the implementation this functionality. As the code runs, a visual representation of the tape is also dynamically updated after every instruction, with the user able to shift their view of the tape to the left and right arbitrarily far.
 
 #### Main Brainfuck Parsing Functions:&nbsp;
 
@@ -53,7 +52,7 @@ https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f5
 
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/GUITest.hs#L231-L272
 
-We were also able to implement a Turing Machine Simulator and stepper to allow the user to better understand and investigate Brainfuck code. By pressing "Left" or "Right", the tape is shifted so that you can see different portions of it. Pressing "Step" begins the process of stepping through the code, and each click to "Next" moves the tape forward by one, updating the terminal as necessary. This creates a visual representation of the memory tape that can be manipulated with our stepper buttons, allowing users to interact with their code at a low level.
+We were also able to implement a Turing Machine Simulator and stepper to allow the user to better understand and investigate Brainfuck code. By pressing "Left" or "Right", the tape is shifted so that you can see different portions of it. Pressing "Step" begins the process of stepping through the code, and each click to "Next" moves the tape forward by one, updating the terminal as necessary. When a new step is completed, the tape is reset back to the index position of the actual program. This creates a visual representation of the memory tape that can be manipulated with our stepper buttons, allowing users to visualise their code at a low level.
 
 The following two links show some of the code written to create the Turing machine tape, as well as the GUI tape viewer.
 
