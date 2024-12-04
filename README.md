@@ -8,8 +8,6 @@ This project is in fulfillment of the [CPSC 312 2024W1 project requirements](htt
 
 **A note for the grader:**  Parsec was mentioned in the proposal as a means to parse and tokenise the brainfuck code, but we ended up using pure Haskell given that we didn't need the extensions that it provided for the intended behaviour of our program. We also thought it would make the interpreter code cleaner and more idiomatic.
 
-Video: https://drive.google.com/file/d/1bmb5Wfqyfk52jdlCS2s2ZvibwPv23d6g/view?usp=sharing
-
 [Proposal README](https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/tree/b29510c459b99c7a57cb9d143609dd2cb9eb4ab4)
 
 ## Team Members
@@ -35,47 +33,54 @@ We surely built on the work of others! Here are resources and people we got supp
 
 ## Video
 
-[Our MVP Video](LINK HERE)
+[Our MVP Video](https://drive.google.com/file/d/1bmb5Wfqyfk52jdlCS2s2ZvibwPv23d6g/view?usp=sharing)
 
 ## Guide to MVP
 
 Our MVP fulfills our proposal as we were able to successfully build a text editor and interpreter for Brainfuck using Haskell. Below, we've included a screenshot of our GUI for reference.
 
-![Screenshot 2024-12-03 165037](https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/assets/22486/54c4e016-7e4e-479e-807e-0c62a6f91482)
+![GUI Example](./interpreter_gui_example.jpg)
 
 The textbox to the left is where users may input their Brainfuck code. It features syntax highlighting as shown in the the provided screenshot (+, >, and . are highlighted in different colours), as well as mismatched bracket detection. After pressing the run button, users will be shown the output of their code in the textbox in the upper right, our terminal, after it has been interpreted by our backend code. Should the code request user input, this can be written in the textbox below the terminal, and submitted by pressing "Send". Below are two links to our code base that show the implementation this functionality.
 
 #### Main Brainfuck Parsing Functions:&nbsp;
+
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/InterpreterBase.hs#L36-L47
 
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/InterpreterBase.hs#L61-L90
 
 #### Syntax Highlighting for brackets:&nbsp;
+
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/GUITest.hs#L231-L272
 
-We were also able to implement a Turing Machine Simulator and stepper to allow the user to better understand and investigate Brainfuck code. By pressing "Left" or "Right", the tape is shifted so that you can see different portions of it. Pressing "Step" begins the process of stepping through the code, and each click to "Next" moves the tape forward by one, updating the terminal as necessary. This creates a visual representation of the memory tape that can be manipulated with our stepper buttons, allowing users to interact with their code at a low level. 
- 
-The following two links show some of the code written to create the Turing machine tape, as well as the GUI tape viewer. 
+We were also able to implement a Turing Machine Simulator and stepper to allow the user to better understand and investigate Brainfuck code. By pressing "Left" or "Right", the tape is shifted so that you can see different portions of it. Pressing "Step" begins the process of stepping through the code, and each click to "Next" moves the tape forward by one, updating the terminal as necessary. This creates a visual representation of the memory tape that can be manipulated with our stepper buttons, allowing users to interact with their code at a low level.
+
+The following two links show some of the code written to create the Turing machine tape, as well as the GUI tape viewer.
 
 #### Tape Implementation:&nbsp;
+
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/Tape.hs#L21-L52
 
 #### Part of the code for the GUI tape viewer:&nbsp;
+
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/GUITest.hs#L24-L46
 
 ## Guide to our learning
 
-Our MVP builds on our Haskell knowledge as we used the GI.Gtk library to build a graphical user interface. Our GUI includes the use of textboxes, buttons, and dynamic text displays (the tape) that are linked to our backend, allowing users to interact with our system through a functional and clean user interface. We extended our understanding of IO functions by using them to accept user input and display results (after interpreting input code using our backend). Below we've included key code that allows our GUI to operate. 
+Our MVP builds on our Haskell knowledge as we used the GI.Gtk library to build a graphical user interface. Our GUI includes the use of textboxes, buttons, and dynamic text displays (the tape) that are linked to our backend, allowing users to interact with our system through a functional and clean user interface. We extended our understanding of IO functions by using them to accept user input and display results (after interpreting input code using our backend). Below we've included key code that allows our GUI to operate.
 
 #### Implementation of GUI User Input:
+
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/InterpreterGui.hs#L81-L101
 
 #### Invoking the GUI:&nbsp;
+
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/GUITest.hs#L293-L301
 
-We also implented a Monad wrapper, to allow us to connect the front and backend.
+We also implented a Monad wrapper, to allow us to connect the frontends and backend.
 
 #### Monad wrapper for interop with IO:&nbsp;
+
 https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/blob/6a6d36328f51d6a6af7f5c846be1091692d4e8f8/haskell/src/InterpreterBase.hs#L25-L28
 
 ## How to test and run the MVP
