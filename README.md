@@ -8,6 +8,8 @@ This project is in fulfillment of the [CPSC 312 2024W1 project requirements](htt
 
 **A note for the grader:**  Parsec was mentioned in the proposal as a means to parse and tokenise the brainfuck code, but we ended up using pure Haskell given that we didn't need the extensions that it provided for the intended behaviour of our program. We also thought it would make the interpreter code cleaner and more idiomatic.
 
+Video: https://drive.google.com/file/d/1bmb5Wfqyfk52jdlCS2s2ZvibwPv23d6g/view?usp=sharing
+
 [Proposal README](https://github.students.cs.ubc.ca/yod/brainfuck-interpreter-gui/tree/b29510c459b99c7a57cb9d143609dd2cb9eb4ab4)
 
 ## Team Members
