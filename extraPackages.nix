@@ -49,5 +49,6 @@
     xorg.libXtst
     at-spi2-core
     vte
+    libsysprof-capture
   ];
 }

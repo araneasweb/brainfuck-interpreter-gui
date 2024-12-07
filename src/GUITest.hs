@@ -1,20 +1,22 @@
 
-{-# LANGUAGE OverloadedStrings, OverloadedLabels #-}
+{-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE OverloadedStrings #-}
+-- |Module: GUITest
 module GUITest where
 
-import Control.Monad (void, when, unless)
-import qualified GI.Gtk as Gtk
-import Data.GI.Base (AttrOp((:=)), on, set, new)
-import qualified Data.Text as T
+import Control.Concurrent (forkIO, killThread, newEmptyMVar, putMVar, tryTakeMVar)
+import Control.Monad (unless, void, when)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader (MonadIO(liftIO), ReaderT(runReaderT))
-import InterpreterGui (run, GUIState (..), EvalState (..))
+import Control.Monad.Reader (MonadIO (liftIO), ReaderT (runReaderT))
 import Data.Binary (Word8)
-import Tape (Tape(..), store, index, shiftLeft, shiftRight)
-import Control.Concurrent (forkIO, newEmptyMVar, tryTakeMVar, putMVar, killThread)
-import qualified GI.GLib as GLib
-import qualified GI.Gdk as Gdk
+import Data.GI.Base (AttrOp ((:=)), new, on, set)
 import Data.IORef (modifyIORef', newIORef, readIORef, writeIORef)
+import qualified Data.Text as T
+import qualified GI.Gdk as Gdk
+import qualified GI.GLib as GLib
+import qualified GI.Gtk as Gtk
+import InterpreterGui (EvalState (..), GUIState (..), run)
+import Tape (Tape (..), index, shiftLeft, shiftRight, store)
 import TapeGUI (drawTape)
 
 activate :: Gtk.Application -> IO ()

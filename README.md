@@ -4,19 +4,9 @@
 
 An integrated development environment for the esolang brainfuck. It includes a text editor with syntax highlighting, an interpreter, debugging with breakpoints/stepping, and turing machine simulator.
 
-## Acknowledgments
-
-We surely built on the work of others! Here are resources and people we got support from:
-
-+ [Codeblocks from the Brainfuck Wikipedia page](https://en.wikipedia.org/wiki/Brainfuck) for tests and language understanding.
-+ [kavehmz/brainfuck_examples](https://github.com/kavehmz/brainfuck_examples/tree/master) for tests.
-+ [haskell-gi](https://github.com/haskell-gi) for a GUI. (well, bindings to a gui library more specifically)
-
-## How to test and run the MVP
+## How to test and run the interpreter
 
 **Ensure you have the [nix package manager](https://nixos.org/download/) and the installed or the code will not compile!**
-
-(For Debian based systems (including WSL2), must run ``sudo apt install nix-bin`` first.)
 
 To test the interpreter functionality, simply run `make` from the root directory or `make test` from `./haskell`.
 

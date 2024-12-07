@@ -1,3 +1,4 @@
+-- |Module: Tape
 module Tape(Tape (..), shiftRight, shiftLeft, inc, dec, store, index) where
 
 -- We want to have a tape datatype where we can get the current index, the prev elements and the suc elements
