@@ -6,7 +6,7 @@ An integrated development environment for the esolang brainfuck. It includes a t
 
 ## How to test and run the interpreter
 
-**Ensure you have the [nix package manager](https://nixos.org/download/) and the installed or the code will not compile!**
+**Ensure you have the [nix package manager](https://nixos.org/download/) installed or the code will not compile!**
 
 To test the interpreter functionality, simply run `make` from the root directory or `make test` from `./haskell`.
 
