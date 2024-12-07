@@ -1,22 +1,26 @@
-{-# LANGUAGE OverloadedStrings, OverloadedLabels, InstanceSigs, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE OverloadedStrings #-}
+-- |Module: InterpreterGui
 module InterpreterGui(GUIState (..), run, EvalState(..)) where
 
+import Control.Concurrent (MVar (..), newEmptyMVar, putMVar, takeMVar)
 import Control.Monad (void)
-import qualified GI.Gtk as Gtk
-import qualified Data.Text as T
-import Control.Monad.Reader (MonadIO(liftIO), MonadReader(ask), ReaderT)
-import Data.Binary ( Word8 )
-import Tape (Tape(..), store, index)
-import Control.Concurrent (newEmptyMVar, putMVar, takeMVar, MVar(..))
-import qualified GI.GLib as GLib
-import InterpreterBase (Interpreter(..), run, InterpreterState(..))
-import qualified GI.GObject.Functions as Gi.GObjects
+import Control.Monad.Reader (MonadIO (liftIO), MonadReader (ask), ReaderT)
+import Data.Binary (Word8)
 import qualified Data.GI.Base as Gi.Gdk
-import Data.Map (Map, lookup, insert, empty)
 import Data.IORef (IORef)
-import GHC.IORef (writeIORef, IORef)
+import Data.Map (Map, empty, insert, lookup)
+import qualified Data.Text as T
+import GHC.IORef (IORef, writeIORef)
+import GI.Gdk (AttrOp ((:=)), set)
+import qualified GI.GLib as GLib
+import qualified GI.GObject.Functions as Gi.GObjects
+import qualified GI.Gtk as Gtk
+import InterpreterBase (Interpreter (..), InterpreterState (..), run)
+import Tape (Tape (..), index, store)
 import TapeGUI (drawTape)
-import GI.Gdk (set, AttrOp ((:=)))
 -- wrapper on InterpreterBase such that it works with gi-gtk :)
 
 data EvalState = RunMode | StepMode

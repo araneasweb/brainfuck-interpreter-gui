@@ -1,12 +1,14 @@
-{-# LANGUAGE OverloadedStrings, OverloadedLabels #-}
+{-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE OverloadedStrings #-}
+-- |Module: TapeGUI
 module TapeGUI(drawTape, drawCell) where
 
-import qualified GI.Gtk as Gtk
-import Data.IORef (IORef, newIORef, modifyIORef', readIORef)
+import Data.GI.Base (AttrOp ((:=)), new, on)
+import Data.IORef (IORef, modifyIORef', newIORef, readIORef)
 import qualified Data.Text as T
-import Data.GI.Base (on, AttrOp((:=)), new)
 import Data.Word (Word8)
-import Tape (Tape(..), shiftRight, shiftLeft, inc, dec, store, index)
+import qualified GI.Gtk as Gtk
+import Tape (Tape (..), dec, inc, index, shiftLeft, shiftRight, store)
 
 drawTape :: Gtk.Grid -> IORef (Tape Word8) -> IORef Int -> IO ()
 drawTape grid tapeRef offsetRef = do

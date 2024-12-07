@@ -1,9 +1,10 @@
 {-# LANGUAGE InstanceSigs #-}
+-- |Module: InterpreterStdio
 module InterpreterStdio(run) where
-import InterpreterBase (Interpreter(..), run, InterpreterState(..))
 import Data.Binary (Word8)
-import Data.Map (Map, lookup, insert, empty)
-import Tape (store, index, Tape)
+import Data.Map (Map, empty, insert, lookup)
+import InterpreterBase (Interpreter (..), InterpreterState (..), run)
+import Tape (Tape, index, store)
 -- wrapper on InterpreterBase such that it works with stdio :)
 
 charToByte :: Char -> Maybe Word8

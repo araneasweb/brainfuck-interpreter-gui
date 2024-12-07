@@ -1,8 +1,9 @@
+-- |Module: InterpreterBase
 module InterpreterBase(Interpreter(..), run, InterpreterState(..)) where
-import Data.Binary (Word8)
-import Data.Map (Map, lookup, insert, empty)
 import Control.Monad (void)
-import Tape (Tape(..), shiftRight, shiftLeft, inc, dec, store, index)
+import Data.Binary (Word8)
+import Data.Map (Map, empty, insert, lookup)
+import Tape (Tape (..), dec, inc, index, shiftLeft, shiftRight, store)
 
 -- | A data structure storing the state for evaluation of a given piece of brainfuck source code. Has:
 -- * @readingIndex@, an @Int@ index of the source code at the current evaluation step

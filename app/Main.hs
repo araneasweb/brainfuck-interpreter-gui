@@ -1,9 +1,9 @@
 module Main where
 
-import System.Environment (getArgs)
-import InterpreterStdio (run)
 import Control.Monad (void)
 import GUITest (run)
+import InterpreterStdio (run)
+import System.Environment (getArgs)
 
 handleArgs :: [String] -> IO ()
 handleArgs ("-f":f:_) = void (readFile f >>= InterpreterStdio.run)
