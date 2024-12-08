@@ -2,17 +2,17 @@
 
 ## A Brainfuck Text Editor, Interpreter, and Turing Machine Simulator
 
-An integrated development environment for the esolang brainfuck. It includes a text editor with syntax highlighting, an interpreter, debugging with breakpoints/stepping, and turing machine simulator.
+An integrated development environment for the esolang Brainfuck. It includes a text editor with syntax highlighting, an interpreter, debugging with stepping, and Turing Machine simulator.
 
 ## How to test and run the interpreter
 
 **Ensure you have the [nix package manager](https://nixos.org/download/) installed or the code will not compile!**
 
-To test the interpreter functionality, simply run `make` from the root directory or `make test` from `./haskell`.
+To test the interpreter functionality, simply run `make` from the root directory or `make test`.
 
-To use the interpreter, simply run the command `stack exec brainfuck-interpreter-gui-exe -- -f <<PATH TO FILE>>` (without the `<<>>`) to open a `.bf` file or `stack exec brainfuck-interpreter-gui-exe -- -s STRING` to directly interpret a brainfuck string. (Technically you could run this through ghci, but it returns a `tape`, which is an infinite piece of data so you probably don't want to `show` that.)
+To use the interpreter, simply run the command `stack exec brainfuck-interpreter-gui-exe -- -f "PATH TO FILE"` (without the `""`) to open a `.bf` file or `stack exec brainfuck-interpreter-gui-exe -- -s STRING` to directly interpret a brainfuck string. (Technically you could run this through ghci, but it returns a `tape`, which is an infinite piece of data so you probably don't want to `show` that.)
 
-To run the GUI, enter `./haskell` and run the command `stack exec brainfuck-interpreter-gui-exe -- -g` or run the command `make gui`. You can also run `stack ghci`/`make ghci`, then run `:l GUITest` followed by `run`.
+To run the GUI, run the command `stack exec brainfuck-interpreter-gui-exe -- -g` or run the command `make gui`. You can also run `stack ghci`/`make ghci`, then run `:l GUITest` followed by `run`.
 
 ### Dependencies
 
