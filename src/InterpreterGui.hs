@@ -27,7 +27,7 @@ data EvalState = RunMode | StepMode
 
 data GUIState = GUIState
   { outputView  :: Gtk.TextView
-  , inputField  :: Gtk.Entry
+  , inputEntry  :: Gtk.Entry
   , inputToggle :: Gtk.Button
   , evalState   :: EvalState
   , stepperLock :: MVar ()
@@ -84,7 +84,7 @@ instance Interpreter GUIMonad where
 
   writeInputToTape :: Tape Word8 -> GUIMonad (Tape Word8)
   writeInputToTape tape = do
-      GUIState {inputField = inputField, inputToggle = inputToggle} <- ask
+      GUIState {inputEntry = inputField, inputToggle = inputToggle} <- ask
       resultVar <- liftIO newEmptyMVar
       handlerIdVar <- liftIO newEmptyMVar
       liftIO $ do

@@ -1,6 +1,9 @@
 
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE NamedFieldPuns #-}
 -- |Module: GUITest
 module GUITest where
 
@@ -10,7 +13,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (MonadIO (liftIO), ReaderT (runReaderT))
 import Data.Binary (Word8)
 import Data.GI.Base (AttrOp ((:=)), new, on, set)
-import Data.IORef (modifyIORef', newIORef, readIORef, writeIORef)
+import Data.IORef (modifyIORef', newIORef, readIORef, writeIORef, IORef)
 import qualified Data.Text as T
 import qualified GI.Gdk as Gdk
 import qualified GI.GLib as GLib
@@ -22,43 +25,19 @@ import TapeGUI (drawTape)
 activate :: Gtk.Application -> IO ()
 activate app = do
 
-  ------------------------------------ TURING SIM STUFF --------------------------------------
-  simVbox      <- new Gtk.Box  [ #orientation := Gtk.OrientationVertical, #spacing := 10 ]
-  simGrid      <- new Gtk.Grid [ #columnSpacing := 10 ]
-  simButtonBox <- new Gtk.Box  [ #orientation := Gtk.OrientationHorizontal, #spacing := 10 ]
-  (leftButton, lockedLeftButton) <- createButton "Left" True
-  (rightButton, lockedRightButton) <- createButton "Right" True
-
-  set simGrid [#halign := Gtk.AlignCenter]
-  #packStart simButtonBox lockedLeftButton True True 0
-  #packStart simButtonBox lockedRightButton True True 0
-  #packStart simVbox simGrid True False 0
-  #packStart simVbox simButtonBox False False 0
-  let initialTape = Tape (repeat 0) 0 (repeat 0) :: Tape Word8
-  tapeRef <- newIORef initialTape
-  offsetRef <- newIORef 0
-  drawTape simGrid tapeRef offsetRef
-
-  on leftButton #clicked $ do
-    modifyIORef' offsetRef pred
-    drawTape simGrid tapeRef offsetRef
-
-  on rightButton #clicked $ do
-    modifyIORef' offsetRef succ
-    drawTape simGrid tapeRef offsetRef
-
-  --------------------------------------------------------------------------------------------
+  -- makes turing simulator box
+  (simVbox, tapeGrid, tapeRef, offsetRef, initialTape) <- makeTuringSim
 
   -- run and reset buttons
-  (button, lockedButton)           <- createButton "Run" True
+  (button,      lockedButton     ) <- createButton "Run"   True
   (resetButton, lockedResetButton) <- createButton "Reset" False
-  (stepButton, lockedStepButton)   <- createButton "Step" True
-  (nextButton, lockedNextButton)   <- createButton "Next" False
+  (stepButton,  lockedStepButton ) <- createButton "Step"  True
+  (nextButton,  lockedNextButton ) <- createButton "Next"  False
 
   -- bottom half of the console that works with the "," command
   (sendButton, lockedSendButton)   <- createButton "Send" False
   inputEntry <- new Gtk.Entry [ #sensitive := False ]
-  inputBox   <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
+  inputBox   <- new Gtk.Box   [ #orientation := Gtk.OrientationHorizontal ]
   #packStart inputBox inputEntry True True 0
   #packStart inputBox lockedSendButton False False 0
 
@@ -79,33 +58,23 @@ activate app = do
   tagTable <- #getTagTable buffer
 
   commentTag <- createTag "#6c6f85" tagTable
-  plusTag    <- createTag "#dc8a78" tagTable
-  minusTag   <- createTag "#dc8a78" tagTable
-  rAngleTag  <- createTag "#7287fd" tagTable
-  lAngleTag  <- createTag "#7287fd" tagTable
-  periodTag  <- createTag "#8839ef" tagTable
-  commaTag   <- createTag "#8839ef" tagTable
   errorTag   <- createTag "#d20f39" tagTable
 
-  bracketTags <- mapM (\colour -> do
-    tag <- Gtk.textTagNew Nothing
-    _   <- #add tagTable tag
-    set tag [#foreground := colour]
-    return tag) ["#df8e1d", "#40a02b", "#04a5e5", "#7287fd"]
+  bracketTags <- mapM (\colour -> Gtk.textTagNew Nothing >>=
+    \tag -> #add tagTable tag >> set tag [#foreground := colour] >> pure tag)
+                      ["#df8e1d", "#40a02b", "#04a5e5", "#7287fd"]
 
   on buffer #changed $ do
     startIter <- #getStartIter buffer
     endIter   <- #getEndIter buffer
     #removeAllTags buffer startIter endIter
     #applyTag buffer commentTag startIter endIter
-
-    findCharAndApplyTag buffer (T.pack "+") plusTag
-    findCharAndApplyTag buffer (T.pack "-") minusTag
-    findCharAndApplyTag buffer (T.pack ">") rAngleTag
-    findCharAndApplyTag buffer (T.pack "<") lAngleTag
-    findCharAndApplyTag buffer (T.pack ".") periodTag
-    findCharAndApplyTag buffer (T.pack ",") commaTag
-
+    applyTag "#dc8a78" "+" buffer tagTable
+    applyTag "#dc8a78" "-" buffer tagTable
+    applyTag "#7287fd" ">" buffer tagTable
+    applyTag "#7287fd" "<" buffer tagTable
+    applyTag "#8839ef" "." buffer tagTable
+    applyTag "#8839ef" "," buffer tagTable
     matchBrackets buffer errorTag bracketTags
 
   stepperLock <- newEmptyMVar
@@ -121,19 +90,16 @@ activate app = do
     text         <- #getText buffer startIter endIter False
     outputBuffer <- #getBuffer outputView
     Gtk.textBufferSetText outputBuffer "" (-1)
-    threadId <- liftIO $ forkIO $ void $
+    threadId <- forkIO $ void $
       runReaderT (InterpreterGui.run (T.unpack text))
-        GUIState { outputView  = outputView
-                 , inputField  = inputEntry
+        GUIState { outputView , inputEntry
                  , inputToggle = sendButton
                  , evalState   = RunMode
-                 , stepperLock = stepperLock
-                 , tapeRef     = tapeRef
-                 , tapeGrid    = simGrid
-                 , nextButton  = nextButton
-                 , offsetRef   = offsetRef }
-    liftIO $ writeIORef interpreterThreadRef (Just threadId)
-    return ()
+                 , stepperLock , tapeRef
+                 , tapeGrid, nextButton
+                 , offsetRef }
+    writeIORef interpreterThreadRef (Just threadId)
+    pure ()
 
   -- reset clears the output view, unlocks run, and locks itself
   on resetButton #clicked $ do
@@ -142,18 +108,15 @@ activate app = do
     set resetButton [#sensitive := False]
     set nextButton  [#sensitive := False]
     outputBuffer <- #getBuffer outputView
-    liftIO $ void $ tryTakeMVar stepperLock
+    tryTakeMVar stepperLock
     Gtk.textBufferSetText outputBuffer "" (-1)
     writeIORef tapeRef initialTape
     writeIORef offsetRef 0
-    drawTape simGrid tapeRef offsetRef
-    maybeThreadId <- readIORef interpreterThreadRef
-    case maybeThreadId of
-      Just threadId -> do
-        liftIO $ killThread threadId
-        liftIO $ writeIORef interpreterThreadRef Nothing
-      Nothing -> return ()
-
+    drawTape tapeGrid tapeRef offsetRef
+    readIORef interpreterThreadRef >>= maybe
+      (pure ())
+      (\threadId -> killThread threadId >>
+        writeIORef interpreterThreadRef Nothing)
 
   on stepButton #clicked $ do
     set button      [#sensitive := False]
@@ -166,30 +129,26 @@ activate app = do
     text         <- #getText buffer startIter endIter False
     outputBuffer <- #getBuffer outputView
     Gtk.textBufferSetText outputBuffer "" (-1)
-    threadId <- liftIO $ forkIO $ void $
+    threadId <- forkIO $ void $
       runReaderT (InterpreterGui.run (T.unpack text))
-        GUIState { outputView  = outputView
-                 , inputField  = inputEntry
+        GUIState { outputView, inputEntry
                  , inputToggle = sendButton
                  , evalState   = StepMode
-                 , stepperLock = stepperLock
-                 , tapeRef     = tapeRef
-                 , tapeGrid    = simGrid
-                 , nextButton  = nextButton
-                 , offsetRef   = offsetRef }
-    liftIO $ writeIORef interpreterThreadRef (Just threadId)
-    return ()
+                 , stepperLock, tapeRef
+                 , tapeGrid, nextButton
+                 , offsetRef }
+    writeIORef interpreterThreadRef (Just threadId)
+    pure ()
 
-  on nextButton #clicked $ do
-    liftIO $ putMVar stepperLock ()
+  on nextButton #clicked $ putMVar stepperLock ()
 
   -- GUI margins
-  #setMarginTop scrolledWindowEntry 32
+  #setMarginTop    scrolledWindowEntry 32
   #setMarginBottom scrolledWindowEntry 32
-  #setMarginTop button 32
-  #setMarginBottom button 32
-  #setMarginTop resetButton 32
-  #setMarginBottom resetButton 32
+  #setMarginTop    button              32
+  #setMarginBottom button              32
+  #setMarginTop    resetButton         32
+  #setMarginBottom resetButton         32
 
   -- adding all the elements to boxes for shape and bounding
   hbox      <- new Gtk.Box [ #orientation := Gtk.OrientationHorizontal ]
@@ -218,60 +177,22 @@ activate app = do
 
   #showAll window
 
-findCharAndApplyTag :: Gtk.TextBuffer -> T.Text -> Gtk.TextTag -> IO ()
-findCharAndApplyTag buffer char tag = do
-    startIter <- #getStartIter buffer
-    let findAndTag iter = do
-          (found, matchStart, matchEnd) <- #forwardSearch iter char [Gtk.TextSearchFlagsVisibleOnly] Nothing
-          when found $ do
-            #applyTag buffer tag matchStart matchEnd
-            -- continue searching from the end of the match
-            findAndTag matchEnd
-    findAndTag startIter
-
--- highlight matching pairs of brackets, red if unpaired
 matchBrackets :: Gtk.TextBuffer -> Gtk.TextTag -> [Gtk.TextTag] -> IO ()
-matchBrackets buffer errorTag bracketTags = do
-  iter <- Gtk.textBufferGetStartIter buffer
-  let loop currentIter stack i = do
-    -- check if we are at the end
-        isEnd <- Gtk.textIterIsEnd currentIter
-        unless isEnd $ do
-          char <- Gtk.textIterGetChar currentIter
-          -- update the stack
-          stack' <- case char of
-            '[' -> do
-              copiedIter1 <- Gtk.textIterCopy currentIter
-              copiedIter2 <- Gtk.textIterCopy currentIter
-              _ <- Gtk.textIterForwardChar copiedIter2
-              #applyTag buffer errorTag currentIter copiedIter2
-              return (copiedIter1 : stack)
-            ']' -> do
-              case stack of
-                (lastIter:rest) -> do
-                  let bracketTag = bracketTags !! i
-
-                  copiedIter <- Gtk.textIterCopy lastIter
-                  _ <- Gtk.textIterForwardChar copiedIter
-                  #applyTag buffer bracketTag lastIter copiedIter
-
-                  copiedIter <- Gtk.textIterCopy currentIter
-                  _ <- Gtk.textIterForwardChar copiedIter
-                  #applyTag buffer bracketTag currentIter copiedIter
-
-                  return rest
-                [] -> do
-                  -- too many ]
-                  copiedIter <- Gtk.textIterCopy currentIter
-                  _ <- Gtk.textIterForwardChar copiedIter
-                  #applyTag buffer errorTag currentIter copiedIter
-                  return stack
-            _ -> return stack
-          -- traverse the text
-          moved <- Gtk.textIterForwardChar currentIter
-          when moved $ loop currentIter stack' (mod (i + 1) (length bracketTags))
-  -- Start the search loop
-  loop iter [] 0
+matchBrackets buf errorTag tags = Gtk.textBufferGetStartIter buf >>= loop [] 0
+  where apply buf tag iter = Gtk.textIterCopy iter >>=
+          \nextIter -> Gtk.textIterForwardChar nextIter >>
+          #applyTag buf tag iter nextIter
+        loop stack i iter = Gtk.textIterIsEnd iter >>= \e -> unless e $
+            Gtk.textIterGetChar iter >>= \case
+              '[' -> apply buf errorTag iter >>
+                      (:stack) <$> Gtk.textIterCopy iter
+              ']' | (openIter:rest) <- stack ->
+                      apply buf (tags !! i) openIter >>
+                      apply buf (tags !! i) iter  >> pure rest
+                  | otherwise -> apply buf errorTag iter >> pure stack
+              _ -> pure stack
+            >>= \newStack -> Gtk.textIterForwardChar iter >>= \t -> when t $
+                loop newStack (succ i `mod` length tags) iter
 
 createButton :: MonadIO m => T.Text -> Bool -> m (Gtk.Button, Gtk.AspectFrame)
 createButton label status = do
@@ -282,22 +203,54 @@ createButton label status = do
                    , #obeyChild  := True
                    , #shadowType := Gtk.ShadowTypeNone ]
   #add lockedButton button
-  return (button, lockedButton)
+  pure (button, lockedButton)
 
 createTag :: MonadIO m => T.Text -> Gtk.TextTagTable -> m Gtk.TextTag
-createTag code tagTable = do
-  tag <- Gtk.textTagNew Nothing
-  _   <- #add tagTable tag
-  set tag [ #foreground := code ]
-  return tag
+createTag code tagTable = Gtk.textTagNew Nothing >>= \tag ->
+  #add tagTable tag >> set tag [ #foreground := code ] >> pure tag
 
+applyTag :: String -> String -> Gtk.TextBuffer -> Gtk.TextTagTable -> IO ()
+applyTag colour char buffer table = createTag (T.pack colour) table >>= \tag ->
+  let findAndTag iter = #forwardSearch iter (T.pack char)
+        [Gtk.TextSearchFlagsVisibleOnly] Nothing >>=
+         \(found, matchStart, matchEnd) -> when found $
+         #applyTag buffer tag matchStart matchEnd >> findAndTag matchEnd in
+  #getStartIter buffer >>= \startIter -> findAndTag startIter
+
+makeTuringSim :: IO ( Gtk.Box
+                    , Gtk.Grid
+                    , IORef (Tape Word8)
+                    , IORef Int
+                    , Tape Word8 )
+makeTuringSim = do
+  simVbox      <- new Gtk.Box  [ #orientation := Gtk.OrientationVertical
+                               , #spacing := 10 ]
+  simGrid      <- new Gtk.Grid [ #columnSpacing := 10 ]
+  simButtonBox <- new Gtk.Box  [ #orientation := Gtk.OrientationHorizontal
+                               , #spacing := 10 ]
+  (leftButton,  lockedLeftButton ) <- createButton "Left" True
+  (rightButton, lockedRightButton) <- createButton "Right" True
+
+  set simGrid [#halign := Gtk.AlignCenter]
+  #packStart simButtonBox lockedLeftButton  True True 0
+  #packStart simButtonBox lockedRightButton True True 0
+  #packStart simVbox simGrid True False 0
+  #packStart simVbox simButtonBox False False 0
+  let initialTape = Tape (repeat 0) 0 (repeat 0)
+  tapeRef <- newIORef initialTape
+  offsetRef <- newIORef 0
+  drawTape simGrid tapeRef offsetRef
+
+  on leftButton  #clicked $ modifyIORef' offsetRef pred >>
+    drawTape simGrid tapeRef offsetRef
+
+  on rightButton #clicked $ modifyIORef' offsetRef succ >>
+    drawTape simGrid tapeRef offsetRef
+  pure (simVbox, simGrid, tapeRef, offsetRef, initialTape)
 
 run :: IO ()
-run = do
-  maybeApp <- Gtk.applicationNew (Just "foss.brainfuck-ide") []
-
-  case maybeApp of
-    Nothing  -> putStrLn "Failed to create the GTK application."
-    Just app -> do
-      on app #activate (activate app)
-      void $ #run app Nothing
+run = Gtk.applicationNew (Just "foss.brainfuck-ide") [] >>= \case
+  Nothing  -> putStrLn "Failed to create the GTK application."
+  Just app -> do
+    on app #activate (activate app)
+    void $ #run app Nothing
